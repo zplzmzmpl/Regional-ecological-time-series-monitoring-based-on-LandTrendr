@@ -1,7 +1,7 @@
 # Regional-ecological-time-series-monitoring-based-on-LandsatTrendr
 *Use long-term series remote sensing image data obtained by LLR and LT for time series clustering and classification based on deep learning.*
 
-## STEP 1: Get Your Date
+## STEP 1: Get Your Data
 
 **Using [`ee-LandsatLinkr`](https://github.com/gee-community/ee-LandsatLinkr) tools in GEE platform or python scrips developed by *Justin Braaten* & *Annie Taylor*.**
 
@@ -27,18 +27,18 @@
   <img width="600" height="300" src="https://i.postimg.cc/ZYQphMtL/01.png">
 </p>
 
-*then you can get these asset in your `GEE` account*
+  *then you can get these asset in your `GEE` account*
 <p align="center">
     <img src="https://i.postimg.cc/bvKjQnZb/02.jpg">
 </p>
 
-*after this you can get data after executing `LandasatLinkr`*
+  *after this you can get data after executing `LandasatLinkr`*
 <p align="center">
     <img width='600' height='300' src="https://i.postimg.cc/d1QB1HBV/03.png">
 </p>
 
   *now you need to storage data in `Google Drive` before you download it to local(becouse of gee doesn't support you dowanload to local directly)*
-	*you can follow this code to check data and download it to Drive*
+  *you can follow this code to check data and download it to Drive*
 	
  
 		 // Import the LandsatLinkr module
@@ -89,17 +89,17 @@
     <img width='600' height='300' src="https://i.postimg.cc/ZnRNN00G/04.png">
 </p>
 
----
-> [!NOTE]  
-> These steps will cost lots of time, keep patient🛏️.
----
-
-  *and check data in ENVI*
+  *and then check data in ENVI*
 <p align="center">
     <img width='600' height='300' src="https://i.postimg.cc/vZxGBnLJ/05.png">
 </p>
 
 Congratulations!㊗️ As now you have got the original data!🎆
+
+---
+> [!NOTE]  
+> These steps will cost lots of time, keep patient🛏️.
+---
 
 ## STEP 2: Fit Change Curve(e.g. TCG index)
 - **use IDL to execute [`LandTrendr`](https://github.com/jdbcode/LLR-LandTrendr)**[^1]
@@ -149,7 +149,31 @@ Congratulations!㊗️ As now you have got the original data!🎆
   - Calculate the similarity between time series, usually using methods such as dynamic time warping (DTW).
   - Clustering based on similarity, commonly used methods include k-means algorithm.
   - Analyze the clustering results and perform further interpretation and application as needed.
-   
+
+  **There are two ways to use KShape by `python`**
+- KShape integrated in sci-learn(only CPU engage in calulation)
+  there is a simple example:
+  
+  	  from tslearn.clustering import KShape
+	  def kshape_cpu(X, k):
+	    print('begin kshape....\n')
+	    seed = 0
+	    ksc = KShape(n_clusters=k, n_init=5, verbose=True, random_state=seed)
+	    ksc.fit(X)
+	    print('\nend kshape\n')
+	    return ksc
+
+
+- Independent KShape lib(you can call GPU to accelerate calculation efficiency)
+   there is a simple example:
+
+	   from kshape import KShapeClusteringGPU
+	   def kshape_gpu(X,k):
+	     print('begin kshape gpu...\n')
+	     ksg = KShapeClusteringGPU(n_clusters=k)
+	     ksg.fit(np.expand_dims(X, axis=2))
+	     print('\nend kshape gpu...')
+	     return ksg
 
 [^1]:Kennedy, Robert E., Yang, Zhiqiang, & Cohen, Warren B. (2010). Detecting trends in forest disturbance and recovery using yearly Landsat time series: 1. LandTrendr - Temporal segmentation algorithms. Remote Sensing of Environment, 114, 2897-2910
 [^2]:Zhen Yang, Jing Li, Carl E. Zipper, Yingying Shen, Hui Miao, Patricia F. Donovan, Identification of the disturbance and trajectory types in mining areas using multitemporal remote sensing images,Science of The Total Environment,Volume 644,2018,Pages 916-927,ISSN 0048-9697,https://doi.org/10.1016/j.scitotenv.2018.06.341.
