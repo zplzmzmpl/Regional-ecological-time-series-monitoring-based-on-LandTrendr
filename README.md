@@ -10,6 +10,19 @@
   Click me to get it!⚓ [![Click here to use it](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/gee-community/ee-LandsatLinkr/blob/main/colab_template.ipynb)
 
 - ### OPTION 2: Gather your data in [`GEE`](https://code.earthengine.google.com/2ec3c28efc3ecf15504979a9698a8b0d?noload=true)
+  *Follow these steps to complete your data collection*
+
+  - View WRS-1 granules - figure out what WRS-1 granule to process
+  - Make a processing [dir](https://gist.github.com/jdbcode/36f5a04329d5d85c43c0408176c51e6)
+  - Create MSS WRS-1 reference image - for MSS WRS1 to MSS WRS2 harmonization
+  - View WRS-1 collection - identify bad MSS images
+  - Prepare MSS WRS-1 images
+  - Get TM-to-MSS correction coefficients
+  - Export MSS-to-TM corrected images
+  - Inspect the full time series collection - explore time series via animation and inspector tool to check for noise
+  - Run LandTrendr and display the fitted collection on the map
+  - Display the year and magnitude of the greatest disturbance during the time series
+
 <p align="center">
   <img width="600" height="300" src="https://i.postimg.cc/ZYQphMtL/01.png">
 </p>
@@ -24,7 +37,54 @@
     <img width='600' height='300' src="https://i.postimg.cc/d1QB1HBV/03.png">
 </p>
 
-*now you need to storage data in `Google Drive` before you download it to local(becouse of gee doesn't support to dowanload to local directly)*
+  *now you need to storage data in `Google Drive` before you download it to local(becouse of gee doesn't support you dowanload to local directly)*
+	*you can follow this code to check data and download it to Drive*
+	
+ 
+		 // Import the LandsatLinkr module
+		 var llr = require('users/jstnbraaten/modules:landsatlinkr/landsatlinkr.js');
+		 
+		 var lt = ee.Image('projects/ee-opppmqqqo/assets/LandsatLinkr/041032/landtrendr')
+		 var start_yr = 1972
+		 var end_yr = 2022;
+		 // This has to match the three bands listed in the LT_params ftvBands parameter
+		 // when the landtrendr output was created (in the final step of the colab notebook)
+		 var rgb_bands = {
+		  r: 'ndvi',
+		  g: 'tcg',
+		  b: 'tcw'
+		};
+		var vis_params = {
+		  min: 100,
+		  max: 2000,
+		  gamma: 1.2
+		};
+		
+		var video_params = {
+		  'dimensions': 512,
+		  'crs': 'EPSG:3857',
+		  'framesPerSecond': 8,
+		};
+		//print(lt.select('LandTrendr'));
+		Map.addLayer(lt.select('LandTrendr'), {min:0,max:20000}, 'landtrendr', true);
+		
+		
+		// Create the 50 year image collection from the LandTrendr output
+		var fittedRGBCols = llr.getFittedRgbCol(lt, start_yr, end_yr, rgb_bands, vis_params);
+		//print(fittedRGBCols);
+		// Get the ImageCollection
+		var collection = ee.ImageCollection(fittedRGBCols.rgb); // replace 'rgb' with the actual ID of your ImageCollection
+		print(collection);
+		
+		var batch = require('users/fitoprincipe/geetools:batch')
+		//COLLECTION
+		batch.Download.ImageCollection.toDrive(collection,"041032", {
+		scale: 30,
+		crs:'EPSG:3857',
+		region: geometry,
+		type:"float" });`
+
+
 <p align="center">
     <img width='600' height='300' src="https://i.postimg.cc/ZnRNN00G/04.png">
 </p>
@@ -34,7 +94,7 @@
 > These steps will cost lots of time, keep patient🛏️.
 ---
 
-*and check data in ENVI*
+  *and check data in ENVI*
 <p align="center">
     <img width='600' height='300' src="https://i.postimg.cc/vZxGBnLJ/05.png">
 </p>
@@ -42,7 +102,7 @@
 Congratulations!㊗️ As now you have got the original data!🎆
 
 ## STEP 2: Fit Change Curve(e.g. TCG index)
-- **use IDL to execute [`LandsatTrendr`](https://github.com/jdbcode/LLR-LandTrendr)**[^1]
+- **use IDL to execute [`LandTrendr`](https://github.com/jdbcode/LLR-LandTrendr)**[^1]
   - *we develop a GUI to help users to use it.*
   <p align="center">
     <img width='600' height='500' src="https://i.postimg.cc/hPTkFLLv/13.png">
@@ -71,7 +131,8 @@ Congratulations!㊗️ As now you have got the original data!🎆
   <p align="center">
     <img width='500' height='500' src="https://i.postimg.cc/J05HvJ80/2.png">
   </p>
-  but LT may be disable in some data (AKA `noise`), so after executing LT we had better apply a median filtering.
+	
+  - *but LT may be disable in some data (AKA `noise`), so after executing LT we had better apply a median filtering.*
     <p align="center">
     <img width='300' height='300' src="https://i.postimg.cc/wTc49b24/2.png" hspace=10>
       <img width='300' height='300' src="https://i.postimg.cc/nzS2X6gp/2.png" hspace=10>
@@ -84,10 +145,10 @@ Congratulations!㊗️ As now you have got the original data!🎆
   In this step we use KShape[^3] algorothm to achieve our ts data clustering. Before we begain, we'd better know what's `KShape`?
   
   The KShape clustering method is a clustering algorithm based on time series data. It groups time series into different clusters by calculating the similarity between them. The key to the KShape clustering method is to match the shape of the time series, not just the numerical value. This enables KShape to discover time series that have similar shapes but not necessarily similar values. The KShape clustering method has wide applications in data analysis in various fields, including finance, medical and weather prediction.The basic steps of the KShape clustering method include:
-  - 1. Select the time series data set to cluster.
-  - 2. Calculate the similarity between time series, usually using methods such as dynamic time warping (DTW).
-  - 3. Clustering based on similarity, commonly used methods include k-means algorithm.
-  - 4. Analyze the clustering results and perform further interpretation and application as needed.
+  - Select the time series data set to cluster.
+  - Calculate the similarity between time series, usually using methods such as dynamic time warping (DTW).
+  - Clustering based on similarity, commonly used methods include k-means algorithm.
+  - Analyze the clustering results and perform further interpretation and application as needed.
    
 
 [^1]:Kennedy, Robert E., Yang, Zhiqiang, & Cohen, Warren B. (2010). Detecting trends in forest disturbance and recovery using yearly Landsat time series: 1. LandTrendr - Temporal segmentation algorithms. Remote Sensing of Environment, 114, 2897-2910
