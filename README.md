@@ -156,7 +156,7 @@ Congratulations!㊗️ As now you have got the original data!🎆
   - Analyze the clustering results and perform further interpretation and application as needed.
 
   **There are two ways to use KShape by `python`**
-- KShape integrated in sci-learn(only CPU engage in calulation)
+- KShape integrated in tslearn(only CPU engage in calulation)
   there is a simple example:
   
   	  from tslearn.clustering import KShape
@@ -199,6 +199,147 @@ before we run KShape code, we need to define fixed number of clustering, for thi
     <img width='500' height='400' src="https://i.postimg.cc/ydNRrcHn/2.png">
   </p>
 
+  now we can apply KShape to image data we got above with 51 bands, you can just cluster ***Univariate*** data, also you can cluster ***Multivariate*** data.
+  
+  **First of all, read data and convert to fomat of time series.**
+  - for univariate data clustering, like ndvi ts data [length(number of ts), time_span(51 for this), var(1 for this)]
+
+	    import rasterio
+	    #Load the .tif image
+	    with rasterio.open("/content/NDVI51years_median.tif") as src:
+	        image_data = src.read()
+	        row = image_data.shape[1]
+	        column = image_data.shape[2]
+	        # Reshape to (rows, columns, bands)
+	        transposed_image_data = np.transpose(image_data, (1, 2, 0))
+	
+	    print('transposed shape:', transposed_image_data.shape)
+	
+	    #Reshape the image data to (rows * columns, bands)
+	    img_data = transposed_image_data.reshape(-1,transposed_image_data.shape[2])
+	    print('reshaped shape:', img_data.shape)
+
+  - for multivariate data clustering,like [ndvi, tcg, tcw] ts data [length(number of ts), time_span(51 for this), var(3 for this)]
+    
+		import rasterio
+		import numpy as np
+		from rasterio.transform import Affine
+	
+		#define image paths
+		image_paths = [
+			    '/*/*/*/ndvi51years_median.tif',
+			     ·········
+			    '/*/*/*/tcw51years_median.tif'
+			]
+		#read image data and reshape to 4D array
+		combined_array = []
+		for path in image_paths:
+	    	with rasterio.open(path) as src:
+	        	array = src.read()
+	        	reshaped_array = array.reshape(array.shape[0], -1)
+	        	combined_array.append(reshaped_array)
+	        	if path == image_paths[0]:
+	          		metadata = src.profile
+	          		print(metadata)
+	
+		#convert list to array
+		combined_array = np.array(combined_array)
+	
+		#transpose array to fomat as requires
+		combined_array = combined_array.transpose(2, 1, 0)
+	
+		print(combined_array.shape)
+		#save as npy file, you will don't need to read raster data again and again
+		np.save("/*/tsdata_samples_51_3.npy",combined_array)
+	
+	 	#save metadata
+		with rasterio.open('/content/drive/MyDrive/metadata.tif', 'w', **metadata) as dst:
+	    		dst.update_tags(**metadata)
+**now see the result after kshape clustering(univariate for left and multivariate for right)🥳**
+  <p align='center'>
+    <img width='300' height='300' src="https://i.postimg.cc/13X8tx8r/2.png" hspace='10'>
+    <img width='300' height='300' src="https://i.postimg.cc/T1hp091g/2.png" hsapce='10'>
+  </p>
+
+**but now😕, another question is how to evaluate accuracy of kshape clustering❓**
+
+*alas, tslearn does not seem to provide an evaluation method for KShape clustering. so we recommend you **modify the source code** to achieve it, more information click [here](https://blog.csdn.net/qq_37960007/article/details/107937212). let's see how to realize it. Officially, three similarity measures, dtw-dba, softdtw, and Euclidean distance, are provided in tslearn, but nothing about KShape clustering. Notice that source code, there `metric="precomputed"`, indicates that a user-defined distance metric is provided, which is good, and then the key to evaluating KShape using **`silhouette_score`** is here:*
+
+*here is needed information about `silhouette_score`:*
+it is an indicator that measures the tightness and separation of clustering results. It is based on the distance of each sample to other samples within the cluster to which it belongs and the distance to samples in the nearest cluster. The value range of the silhouette coefficient is between [-1, 1]. The closer the value is to 1, the better the sample clustering is. The closer the value is to -1, the worse the sample clustering is.
+
+- Positive value: indicates that the samples are clustered well, and the intra-cluster distance is closer than the inter-cluster distance.
+- Negative value: indicates that the samples are poorly clustered, and the distance within clusters is farther than the distance between clusters.
+- Close to 0: It means that the distance between samples within and between clusters is similar, and the clustering result is unclear.
+
+
+*here is e.g. of how to use silhouette_score calculation function `silhouette_score(cdist_dtw(X),y_pred,metric="precomputed")`, so you need to figure out what is `cdist_dtw(X)`❔. Actually realname of it, is measuring distance of time series, different from `Euclidean`, `dtw` and `softdtw`. so here is definition of SBD which is foundation of kshape.*
+
+$SBD(\vec{x},\vec{y})=1-\max_{w}\left(\frac{CC_w(\vec{x},\vec{y})}{\sqrt{R_0(\vec{x},\vec{x})\cdot R_0(\vec{y},\vec{y})}}\right)$
+
+so we add the `_get_norms` function, which is responsible for calculating the modulus length, and the `_my_cross_dist` function, which returns the distance matrix of the temporal collection X, i.e., the matrix formed by the distance between each element ti in X.
+
+	def _get_norms(self,X):
+	    norms = []
+	    for x in X
+	        result = numpy.linalg.norm(x)
+		norms.append(result)
+	    norms = numpy.array(norms)
+	    return norms
+	
+	def _my_cross_dist(self,X):
+	    norms = self._get_norms(X)
+	    return 1.-cdist_normalized_cc(X,X,norms1=norms,norms2=norms,self_similarity=False)
+
+*after this we test how it work*🤯
+
+	import numpy as np
+	from tslearn.generators import random_walks
+	import tslearn.metrics as metrics
+	from tslearn.clustering import silhouette_score
+	 
+	def test_kshape_silhouette_score():
+	    seed = 0
+	    num_cluster = 2
+	    ks = KShape(n_clusters= num_cluster ,n_init= 5 ,verbose= True ,random_state=seed)
+	    X = random_walks(n_ts=20, sz=16, d=1) * 10
+	    #generate label radomly
+	    y_pred = np.random.randint(2, size=20)
+	    dists = ks._my_cross_dist(X)
+	    #set diagonal elments to zero
+	    np.fill_diagonal(dists,0)
+	    #calculate silhouette score
+	    score = silhouette_score(dists,y_pred,metric="precomputed")
+	    print(score)
+       >>>output:0.026772646
+
+**now, part of time series clustering is done. if you have interest about it, you also can try kmean➕dtw➕dba or kmeans➕softdtw. it's similar workflow. good luck😆**
+
+## STEP 4: Time Series Classification
+
+- **prepare training data**
+  
+  generate training data according to paper[^2]:
+  
+  <p align="center">
+    <img width='700' height='900' src="https://i.postimg.cc/J4wFjj8v/2.png">
+  </p>
+
+  - (1) The sample point was disturbed during the study period but not restored and failed to exhibit vegetation recovery. It is classified as DN and its NDVI values oscillate below the vegetation threshold after a sharp decrease (a).
+  - (2) The sample point was disturbed during the study period and was still recovering at the end of the study period. It is classified as DR1 and its NDVI values decline sharply from a vegetated to a non- 
+  vegetated state, then increase gradually to a state of less than-full recovery with an upward trend in last several years (b).
+  - (3) The sample point was disturbed during the study period and exhibited vegetative stability but did not exhibit full recovery. It is classified as DR2 and its NDVI values decline sharply from a vegetated to a non-vegetated state, then increase gradually to a vegetated status with NDVI values lower than pre-disturbance but with little change in last several years (c).
+  - (4) The sample point was disturbed during the study period, was restored to be stable, and exhibited full vegetation recovery. It is classified as DR3 and its NDVI values decline sharply from a vegetated to a non-vegetated state, then increase gradually to a vegetated status that is approaching or exceeding pre-disturbance with little change in last several years (d).
+  - (5) The sample point was disturbed prior to the study period and exhibited recovery but did not exhibit a stable state. It is classified as BD1 and its initial NDVI values of pixels are lower than the 
+  vegetation threshold but then increase gradually to a level that is no less than the vegetation threshold with an upward trend in last several years (e).
+  - (6) The sample point was disturbed prior to the study period was restored to be stable. It is classified as BD2 and its initial NDVI values are lower than the vegetation threshold but then increase gradually 
+  to a level that is no less than the vegetation threshold with little change in last several years (f).
+  - (7) The sample points exhibited disturbances two or more times (g and h). They are classified as CD, meaning that they had complex disturbance histories.
+
+  use code to generate relative pure training data:
+    <p align="center">
+    <img src="https://i.postimg.cc/PxbQnvLV/3.png">
+    </p>
   
 [^1]:Kennedy, Robert E., Yang, Zhiqiang, & Cohen, Warren B. (2010). Detecting trends in forest disturbance and recovery using yearly Landsat time series: 1. LandTrendr - Temporal segmentation algorithms. Remote Sensing of Environment, 114, 2897-2910
 [^2]:Zhen Yang, Jing Li, Carl E. Zipper, Yingying Shen, Hui Miao, Patricia F. Donovan, Identification of the disturbance and trajectory types in mining areas using multitemporal remote sensing images,Science of The Total Environment,Volume 644,2018,Pages 916-927,ISSN 0048-9697,https://doi.org/10.1016/j.scitotenv.2018.06.341.
