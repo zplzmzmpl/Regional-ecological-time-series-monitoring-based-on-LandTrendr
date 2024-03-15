@@ -1,15 +1,15 @@
 # Regional-ecological-time-series-monitoring-based-on-LandsatTrendr
 *Use long-term series remote sensing image data obtained by LLR and LT for time series clustering and classification based on deep learning.*
 
-## STEP 1: Collect Data
+## 🤗STEP 1: Collect Data
 
 **Using [`ee-LandsatLinkr`](https://github.com/gee-community/ee-LandsatLinkr) tools in GEE platform or python scrips developed by *Justin Braaten* & *Annie Taylor*.**
 
-- ### OPTION 1: Collect your data with `google colab`
+- ### OPTION 1: Collect your data with `google colab`🍕
 
   Click me to get it!⚓ [![Click here to use it](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/gee-community/ee-LandsatLinkr/blob/main/colab_template.ipynb)
 
-- ### OPTION 2: Collect your data in [`GEE`](https://code.earthengine.google.com/2ec3c28efc3ecf15504979a9698a8b0d?noload=true)
+- ### OPTION 2: Collect your data in [`GEE`](https://code.earthengine.google.com/2ec3c28efc3ecf15504979a9698a8b0d?noload=true)🌏
   *Follow these steps to complete your data collection*
 
   - View WRS-1 granules - figure out what WRS-1 granule to process
@@ -27,81 +27,37 @@
   <img width="600" height="300" src="https://i.postimg.cc/ZYQphMtL/01.png">
 </p>
 
-  *then you can get these asset in your `GEE` account*
+<p align='center'>then you can get these asset in your `GEE` account</p>
 <p align="center">
     <img src="https://i.postimg.cc/bvKjQnZb/02.jpg">
 </p>
 
-  *after this you can get data after executing `LandasatLinkr`*
+<p align='center'>after this you can get data after executing `LandasatLinkr`</p>
 <p align="center">
     <img width='600' height='300' src="https://i.postimg.cc/d1QB1HBV/03.png">
 </p>
 
   *now you need to storage data in `Google Drive` before you download it to local(becouse of gee doesn't support you dowanload to local directly)*
   *you can follow this code to check data and download it to Drive*
-	
- 
-		 // Import the LandsatLinkr module
-		 var llr = require('users/jstnbraaten/modules:landsatlinkr/landsatlinkr.js');
-		 
-		 var lt = ee.Image('projects/ee-opppmqqqo/assets/LandsatLinkr/041032/landtrendr')
-		 var start_yr = 1972
-		 var end_yr = 2022;
-		 // This has to match the three bands listed in the LT_params ftvBands parameter
-		 // when the landtrendr output was created (in the final step of the colab notebook)
-		 var rgb_bands = {
-		  r: 'ndvi',
-		  g: 'tcg',
-		  b: 'tcw'
-		};
-		var vis_params = {
-		  min: 100,
-		  max: 2000,
-		  gamma: 1.2
-		};
-		
-		var video_params = {
-		  'dimensions': 512,
-		  'crs': 'EPSG:3857',
-		  'framesPerSecond': 8,
-		};
-		//print(lt.select('LandTrendr'));
-		Map.addLayer(lt.select('LandTrendr'), {min:0,max:20000}, 'landtrendr', true);
-		
-		
-		// Create the 50 year image collection from the LandTrendr output
-		var fittedRGBCols = llr.getFittedRgbCol(lt, start_yr, end_yr, rgb_bands, vis_params);
-		//print(fittedRGBCols);
-		// Get the ImageCollection
-		var collection = ee.ImageCollection(fittedRGBCols.rgb); // replace 'rgb' with the actual ID of your ImageCollection
-		print(collection);
-		
-		var batch = require('users/fitoprincipe/geetools:batch')
-		//COLLECTION
-		batch.Download.ImageCollection.toDrive(collection,"041032", {
-		scale: 30,
-		crs:'EPSG:3857',
-		region: geometry,
-		type:"float" });`
 
 
 <p align="center">
     <img width='600' height='300' src="https://i.postimg.cc/ZnRNN00G/04.png">
 </p>
 
-  *and then check data in ENVI*
+<p align='center'>and then check data in ENVI</p>
 <p align="center">
     <img width='600' height='300' src="https://i.postimg.cc/vZxGBnLJ/05.png">
 </p>
 
-Congratulations!㊗️ As now you have got the original data!🎆
+<p align='center'>Congratulations!㊗️ As now you have got the original data!🎆</p>
 
 ---
 > [!NOTE]  
 > These steps will cost lots of time, keep patient🛏️.
 ---
 
-## STEP 2: Fit Change Curve(e.g. TCG index)
+## 😇STEP 2: Fit Change Curve(e.g. TCG index)
 - **use IDL to execute [`LandTrendr`](https://github.com/jdbcode/LLR-LandTrendr)**[^1]
   - *we develop a GUI to help users to use it.*
   <p align="center">
@@ -146,7 +102,7 @@ Congratulations!㊗️ As now you have got the original data!🎆
   Congratulations! As now you have got the processed data after LT algorithm!🤞
   If you want to know more infomation about LandTrendr algorithm, we recommend you follow this [`link`](https://emapr.github.io/LT-GEE/index.html)🥳
 
-  ## STEP 3: Time Series Clustering
+  ## 🤖STEP 3: Time Series Clustering
   In this step we use **KShape**[^3] algorothm to achieve our ts data clustering. Before we begain, we'd better know what's **KShape**?
   
   The KShape clustering method is a clustering algorithm based on time series data. It groups time series into different clusters by calculating the similarity between them. The key to the KShape clustering method is to match the shape of the time series, not just the numerical value. This enables KShape to discover time series that have similar shapes but not necessarily similar values. The KShape clustering method has wide applications in data analysis in various fields, including finance, medical and weather prediction.The basic steps of the KShape clustering method include:
@@ -199,6 +155,21 @@ before we run KShape code, we need to define fixed number of clustering, for thi
     <img width='500' height='400' src="https://i.postimg.cc/ydNRrcHn/2.png">
   </p>
 
+  but sometimes it is doesn't obvious just by this way, so we suggest use `yellowbrick` lib to visualize k-elow-law:
+	
+ 	from yellowbrick.cluster import KElbowVisualizer	
+	#Instantiate the clustering model and visualizer
+	model = KShape(n_init=1, verbose=True, random_state=0)
+	
+	#distortion: mean sum of squared distances to centers
+	#silhouette: mean ratio of intra-cluster and nearest-cluster distance
+	#calinski_harabasz: ratio of within to between cluster dispersion
+	
+	visualizer = KElbowVisualizer(model, k=(4,10),metric='distortion')
+	
+	visualizer.fit(img_data)        # Fit the data to the visualizer
+	visualizer.show()        # Finalize and render the figure
+  
   now we can apply KShape to image data we got above with 51 bands, you can just cluster ***Univariate*** data, also you can cluster ***Multivariate*** data.
   
   **First of all, read data and convert to fomat of time series.**
@@ -315,7 +286,7 @@ so we add the `_get_norms` function, which is responsible for calculating the mo
 
 **now, part of time series clustering is done. if you have interest about it, you also can try kmean➕dtw➕dba or kmeans➕softdtw. it's similar workflow. good luck😆**
 
-## STEP 4: Time Series Classification
+## 🙉STEP 4: Time Series Classification
 
 - **prepare training data**
   
@@ -340,7 +311,48 @@ so we add the `_get_norms` function, which is responsible for calculating the mo
     <p align="center">
     <img src="https://i.postimg.cc/PxbQnvLV/3.png">
     </p>
+- **begain training model**
   
+  *here we list standard procedures to train a model:*
+  
+  - choose model(like `minirocket`,`transformer`,`timesnet` and so on)
+  - normalize raw data(if needed) and visualize it
+  - build learner
+  - find best learning_rate
+  - training
+  - optimize hyperparameter
+  - training
+  - validation accuracy
+  - visualize result
+  - apply it to rs image
+  - evaluate accuracy
+    
+  *here are the classification result after training based on dataset we generated above.*
+
+  <p align="center"><img src="https://i.postimg.cc/9fJwQsvP/2.png">
+  </p>
+
+  <p align='center'>model info</p>
+
+<div align=center>
+
+| Model            | training accuracy | validation accuracy | training loss | validaion loss | actual accuracy |
+|------------------|-------------------|---------------------|---------------|----------------|-----------------|
+| InceptionTime    | 0.939286          | 0.9393              | 0.173723      | 0.157058       | i'm tring       |
+| BOSSVS           | 0.792857          | N/A                 | N/A           | N/A            | i'm tring       |
+| TimeSeriesForest | 0.939285          | N/A                 | N/A           | N/A            | i'm tring       |
+| CNN Classifier   | 0.921428          | N/A                 | N/A           | N/A            | i'm tring       |
+| MiniRocket       | 0.939286          | N/A                 | 0.176533      | 0.186470       | i'm tring       |
+| Tansformer       | 0.941667          | 0.9542              | 0.571105      | 0.612427       | i'm tring       |
+
+</div>
+
+*you can also draw picture to check predicted probal per ture class and confusion matrix after training, like this:*
+  <p align="center">
+<img src="https://i.postimg.cc/JzxBrKdW/2.png">
+<img src="https://i.postimg.cc/P5wF0p6Z/2.png">
+  </p>
+
 [^1]:Kennedy, Robert E., Yang, Zhiqiang, & Cohen, Warren B. (2010). Detecting trends in forest disturbance and recovery using yearly Landsat time series: 1. LandTrendr - Temporal segmentation algorithms. Remote Sensing of Environment, 114, 2897-2910
 [^2]:Zhen Yang, Jing Li, Carl E. Zipper, Yingying Shen, Hui Miao, Patricia F. Donovan, Identification of the disturbance and trajectory types in mining areas using multitemporal remote sensing images,Science of The Total Environment,Volume 644,2018,Pages 916-927,ISSN 0048-9697,https://doi.org/10.1016/j.scitotenv.2018.06.341.
 [^3]:John Paparrizos Columbia University jopa@cs.columbia.edu Luis Gravano Columbia University gravano@cs.columbia.edu k-Shape: Efficient and Accurate Clustering of Time Series. 
