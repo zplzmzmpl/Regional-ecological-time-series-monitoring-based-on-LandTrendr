@@ -150,7 +150,7 @@ before we run KShape code, we need to define fixed number of clustering, for thi
         plt.ylabel('Distortion')
         plt.show()
   
-  code above will return a plot like this, you can see *slop* become more gentle when value of *x* equal 5, so we confirm number of clustering is 5
+  code above will return a plot like this, you can see *slop* become more gentle when value of *x* equal *5*, so we confirm number of clustering is *5*
   <p align="center">
     <img width='500' height='400' src="https://i.postimg.cc/ydNRrcHn/2.png">
   </p>
@@ -170,6 +170,13 @@ before we run KShape code, we need to define fixed number of clustering, for thi
 	visualizer.fit(img_data)        # Fit the data to the visualizer
 	visualizer.show()        # Finalize and render the figure
   
+  here are visualizations of `elbow law` using three evaluation indexs with `yellowbrick` lib.
+<p align="center">
+<img src="https://i.postimg.cc/fR31Cp9m/Calinski-Harabasz-Score-Elbow-for-KShape-Clustering.png">
+<img src="https://i.postimg.cc/7ZvNvWRg/Distortion-Score-Elbow-for-KShape-Clustering.png">
+<img src="https://i.postimg.cc/pV470xDC/Silhouette-Score-Elbow-for-KShape-Clustering.png">
+</p>
+
   now we can apply KShape to image data we got above with 51 bands, you can just cluster ***Univariate*** data, also you can cluster ***Multivariate*** data.
   
   **First of all, read data and convert to fomat of time series.**
@@ -224,7 +231,7 @@ before we run KShape code, we need to define fixed number of clustering, for thi
 		np.save("/*/tsdata_samples_51_3.npy",combined_array)
 	
 	 	#save metadata
-		with rasterio.open('/content/drive/MyDrive/metadata.tif', 'w', **metadata) as dst:
+		with rasterio.open('/*/metadata.tif', 'w', **metadata) as dst:
 	    		dst.update_tags(**metadata)
 **now see the result after kshape clustering(univariate for left and multivariate for right)🥳**
   <p align='center'>
