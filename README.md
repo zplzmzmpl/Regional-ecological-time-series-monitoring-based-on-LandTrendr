@@ -34,7 +34,7 @@
 
 <p align='center'>after this you can get data after executing `LandasatLinkr`</p>
 <p align="center">
-    <img width='600' height='300' src="https://i.postimg.cc/d1QB1HBV/03.png">
+    <img width='600' height='400' src="https://i.postimg.cc/d1QB1HBV/03.png">
 </p>
 
   *now you need to storage data in `Google Drive` before you download it to local(becouse of gee doesn't support you dowanload to local directly)*
@@ -42,8 +42,11 @@
 
 
 <p align="center">
-    <img width='600' height='300' src="https://i.postimg.cc/ZnRNN00G/04.png">
+    <img width='600' height='00' src="https://i.postimg.cc/ZnRNN00G/04.png">
 </p>
+
+you can use this [tool](https://emaprlab.users.earthengine.app/view/lt-gee-time-series-animator) developed by ***Justin Braaten*** to see the change map of your study area.
+[![slc1984-2023-rgb.gif](https://i.postimg.cc/y8LX79wf/slc1984-2023-rgb.gif)](https://postimg.cc/gx66DwcR)
 
 <p align='center'>and then check data in ENVI</p>
 <p align="center">
