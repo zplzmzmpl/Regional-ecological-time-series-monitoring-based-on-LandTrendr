@@ -13,15 +13,15 @@
   *Follow these steps to complete your data collection*
 
   - View ***WRS-1*** granules - figure out what WRS-1 granule to process
-  - Make a processing [dir](https://gist.github.com/jdbcode/36f5a04329d5d85c43c0408176c51e6)
+  - Make a processing [***dir***](https://gist.github.com/jdbcode/36f5a04329d5d85c43c0408176c51e6)
   - Create MSS WRS-1 ***reference*** image - for MSS WRS1 to MSS WRS2 harmonization
-  - View WRS-1 collection - identify bad MSS images
+  - View ***WRS-1 collection*** - identify bad MSS images
   - Prepare MSS WRS-1 images
   - Get ***TM-to-MSS correction coefficients***.
   - Export MSS-to-TM ***corrected*** images
-  - Inspect the full time series collection - explore time series via animation and inspector tool to check for noise
+  - Inspect the full ***time series collection*** - explore time series via animation and inspector tool to check for noise
   - Run ***LandTrendr*** and display the fitted collection on the map
-  - Display the year and magnitude of the greatest disturbance during the time series
+  - Display the year and ***magnitude of the greatest disturbance*** during the time series
 
 <p align="center">
   <img width="600" height="300" src="https://i.postimg.cc/ZYQphMtL/01.png">
@@ -363,8 +363,7 @@ so we add the `_get_norms` function, which is responsible for calculating the mo
 <img width='300' height='300' src="https://i.postimg.cc/P5wF0p6Z/2.png">
 </p>
 
-<details> <summary>TS 2 IMG</summary>
-
+### 🖼️***Time Series to Image***
 - ***convert time series to images classification***
   
   we use `tsai` a friendly ts learning lib to achieve it. there are several methods to convert ts data to images:😮
@@ -439,7 +438,6 @@ so we add the `_get_norms` function, which is responsible for calculating the mo
  
 </div>
 
-*check losses and accuracy curve*
 <p align="center"><img src="https://i.postimg.cc/sDWQFfLd/1.png"></p>
 
 - ***apply model to RS image***
@@ -465,10 +463,7 @@ so we add the `_get_norms` function, which is responsible for calculating the mo
 		test_probas, test_targets, test_decoded = learn.get_preds(dl=test_dl, with_decoded=True, save_preds=None)
 		test_decoded]
 
-
-❌**RAM run out**
-
-</details>
+❌**failed becourse of RAM run out**
 
 ## TO DO
 - [ ] classification result accuracy evaluation
