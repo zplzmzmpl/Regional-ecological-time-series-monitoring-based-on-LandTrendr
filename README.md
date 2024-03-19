@@ -5,22 +5,22 @@
 
 **Using [`ee-LandsatLinkr`](https://github.com/gee-community/ee-LandsatLinkr) tools in GEE platform or python scrips developed by *Justin Braaten* & *Annie Taylor*.**
 
-- ### OPTION 1: Collect your data with `google colab`🍕
+- ### OPTION 1: Collect data with `google colab`🍕
 
   Click me to get it!⚓ [![Click here to use it](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/gee-community/ee-LandsatLinkr/blob/main/colab_template.ipynb)
 
-- ### OPTION 2: Collect your data in [`GEE`](https://code.earthengine.google.com/2ec3c28efc3ecf15504979a9698a8b0d?noload=true)🌏
+- ### OPTION 2: Collect data in [`GEE`](https://code.earthengine.google.com/2ec3c28efc3ecf15504979a9698a8b0d?noload=true)🌏
   *Follow these steps to complete your data collection*
 
-  - View WRS-1 granules - figure out what WRS-1 granule to process
+  - View ***WRS-1*** granules - figure out what WRS-1 granule to process
   - Make a processing [dir](https://gist.github.com/jdbcode/36f5a04329d5d85c43c0408176c51e6)
-  - Create MSS WRS-1 reference image - for MSS WRS1 to MSS WRS2 harmonization
+  - Create MSS WRS-1 ***reference*** image - for MSS WRS1 to MSS WRS2 harmonization
   - View WRS-1 collection - identify bad MSS images
   - Prepare MSS WRS-1 images
-  - Get TM-to-MSS correction coefficients
-  - Export MSS-to-TM corrected images
+  - Get ***TM-to-MSS correction coefficients***.
+  - Export MSS-to-TM ***corrected*** images
   - Inspect the full time series collection - explore time series via animation and inspector tool to check for noise
-  - Run LandTrendr and display the fitted collection on the map
+  - Run ***LandTrendr*** and display the fitted collection on the map
   - Display the year and magnitude of the greatest disturbance during the time series
 
 <p align="center">
@@ -45,12 +45,7 @@
     <img src="https://github.com/zplzmzmpl/Regional-ecological-time-series-monitoring-based-on-LandsatTrendr/blob/main/asset/slc1984-2023_rgb.gif">
 </p>
 
-<p align='center'>and then check data in ENVI</p>
-<p align="center">
-<img width='600' height='300' src="https://i.postimg.cc/vZxGBnLJ/05.png">
-</p>
-
-<p align='center'>Congratulations!㊗️ As now you have got the original data!🎆</p>
+***Congratulations!㊗️ As now you have got the original data!🎆***
 
 ---
 > [!NOTE]  
@@ -171,10 +166,11 @@ before we run KShape code, we need to define fixed number of clustering, for thi
 	visualizer.show()        # Finalize and render the figure
   
   here are visualizations of `elbow law` using three evaluation indexs with `yellowbrick` lib.
+
 <p align="center">
-<img src="https://i.postimg.cc/fR31Cp9m/Calinski-Harabasz-Score-Elbow-for-KShape-Clustering.png">
-<img src="https://i.postimg.cc/7ZvNvWRg/Distortion-Score-Elbow-for-KShape-Clustering.png">
-<img src="https://i.postimg.cc/pV470xDC/Silhouette-Score-Elbow-for-KShape-Clustering.png">
+<img width='400' height='300' src="https://i.postimg.cc/fR31Cp9m/Calinski-Harabasz-Score-Elbow-for-KShape-Clustering.png">
+<img width='400' height='300' src="https://i.postimg.cc/7ZvNvWRg/Distortion-Score-Elbow-for-KShape-Clustering.png">
+<img width='400' height='300' src="https://i.postimg.cc/pV470xDC/Silhouette-Score-Elbow-for-KShape-Clustering.png">
 </p>
 
   now we can apply KShape to image data we got above with 51 bands, you can just cluster ***Univariate*** data, also you can cluster ***Multivariate*** data.
@@ -233,7 +229,14 @@ before we run KShape code, we need to define fixed number of clustering, for thi
 	 	#save metadata
 		with rasterio.open('/*/metadata.tif', 'w', **metadata) as dst:
 	    		dst.update_tags(**metadata)
-**now see the result after kshape clustering(univariate for left and multivariate for right)🥳**
+**Second, draw centroid of clustering, take a look at how kshape breaks down the data into categories**
+  <p align='center'>
+    <img width='400' height='300' src="https://i.postimg.cc/mrTnGqpB/kshape-cluster.png" hspace='10'>
+    <img width='400' height='300' src="https://i.postimg.cc/7Y388gP1/kshape-mul-5.png" hsapce='10'>
+  </p>
+  <p align='center'>univariate in the left and mulitvariate in the right</p>
+
+**Finally, check the result after kshape clustering(univariate for left and multivariate for right)🥳**
   <p align='center'>
     <img width='300' height='300' src="https://i.postimg.cc/13X8tx8r/2.png" hspace='10'>
     <img width='300' height='300' src="https://i.postimg.cc/T1hp091g/2.png" hsapce='10'>
@@ -334,7 +337,7 @@ so we add the `_get_norms` function, which is responsible for calculating the mo
   - apply it to rs image
   - evaluate accuracy
     
-  *here are the classification result after training based on dataset we generated above.*
+- ***here are the classification result after training based on dataset we generated above.***
 
   <p align="center"><img src="https://i.postimg.cc/9fJwQsvP/2.png">
   </p>
@@ -356,9 +359,123 @@ so we add the `_get_norms` function, which is responsible for calculating the mo
 
 *you can also draw picture to check predicted probal per ture class and confusion matrix after training, like this:*
   <p align="center">
-<img src="https://i.postimg.cc/JzxBrKdW/2.png">
-<img src="https://i.postimg.cc/P5wF0p6Z/2.png">
-  </p>
+<img width='300' height='300' src="https://i.postimg.cc/JzxBrKdW/2.png">
+<img width='300' height='300' src="https://i.postimg.cc/P5wF0p6Z/2.png">
+</p>
+
+<details> <summary>TS 2 IMG</summary>
+
+- ***convert time series to images classification***
+  
+  we use `tsai` a friendly ts learning lib to achieve it. there are several methods to convert ts data to images:😮
+  
+  - **TSToPlot**: Create matplotlib line plots
+  - **TSToMat**: Create a matplotlib imshow figure
+  - **TSToGADF**: Create an image based on Gramian angle difference field transformation
+  - **TSToGASF**: Creates an image based on Gramian angle summation field transformation
+  - **TSToMTF**: Create image based on Markov transfer field transformation
+  - **TSToRP**: Create images based on recursive graph transformations
+  
+  you can realize it by following code:
+
+		import numpy as np
+		import pandas as pd
+		from sklearn.model_selection import train_test_split
+		import tsai
+		
+		# Read the CSV file
+		df = pd.read_csv('/content/datasets.csv')
+		
+		# Convert the 'dataset' column to numpy arrays
+		df['dataset'] = df['dataset'].apply(lambda x: np.array(eval(x)))
+		
+		# Convert DataFrame to numpy arrays
+		data = np.stack(df['dataset'].values)
+		
+		# Reshape the data to a three-dimensional array
+		data = data.reshape(data.shape[0], 1, data.shape[1])
+		print(data.shape)
+		# Extract labels
+		labels = df['label'].values
+		X_train, X_test, y_train, y_test = train_test_split(data, labels, test_size=0.2, random_state=42)
+		X, y, splits = combine_split_data([X_train, X_test], [y_train, y_test])
+		tfms = [None, Categorize()]
+		bts = [[TSNormalize(), TSToPlot()],
+		       [TSNormalize(), TSToMat(cmap='viridis')],
+		       [TSNormalize(), TSToGADF(cmap='spring')],
+		       [TSNormalize(), TSToGASF(cmap='summer')],
+		       [TSNormalize(), TSToMTF(cmap='autumn')],
+		       [TSNormalize(), TSToRP(cmap='winter')]]
+		btns = ['Plot', 'Mat', 'GADF', 'GASF', 'MTF', 'RP']
+		for i, (bt, btn) in enumerate(zip(bts, btns)):
+		    dsets = TSDatasets(X, y, tfms=tfms, splits=splits)
+		    dls = TSDataLoaders.from_dsets(dsets.train,
+		                                   dsets.valid,
+		                                   bs=[64, 128],
+		                                   batch_tfms=bt,
+		                                   shuffle=False)
+		    xb, yb = dls.train.one_batch()
+		    print(f'\n\ntfm: TSTo{btn} - batch shape: {xb.shape}')
+		    xb[0].show()
+		    plt.show()
+    ts data will be displayed as image like this:
+    <p align="center"><img src="https://i.postimg.cc/qBW895jY/1.png"></p>
+
+   we choose use TsToGADF to create image after comparison. vasualize result after it:
+   <p align="center"><img width='800' height='500' src="https://i.postimg.cc/nLZ8T2y9/1.png"></p>
+   
+- ***begin training***
+<div align=center>
+	
+|epoch|train_loss|valid_loss|accuracy|time|
+|:----|:----|:----|:----|:----|
+|0|1.825284|1.758930|0.225000|00:09|
+|1|1.620805|1.517212|0.496429|00:08|
+|2|1.432231|1.289679|0.607143|00:08|
+····
+|97|0.000065|0.233326|0.946429|00:08|
+|98|0.000066|0.248137|0.946429|00:08|
+|99|0.000064|0.244490|0.950000|00:08|
+ 
+</div>
+
+*check losses and accuracy curve*
+<p align="center"><img src="https://i.postimg.cc/sDWQFfLd/1.png"></p>
+
+- ***apply model to RS image***
+  
+		from sklearn.preprocessing import MinMaxScaler
+		
+		#Initialize the MinMaxScaler
+		scaler = MinMaxScaler()
+		
+		#Fit and transform the data
+		norm_data = scaler.fit_transform(img_data)
+		
+		#Reshape the data back to standard shape
+		norm_data = to3d(norm_data)
+		print(norm_data.shape)
+		-->(389360, 1, 51)
+		#Unlabelled data
+		test_ds = dls.dataset.add_test(norm_data)
+		test_dl = valid_dl.new(test_ds)
+		next(iter(test_dl))
+		-->(TSImage(shape:torch.Size([64, 1, 224, 224])),)
+		
+		test_probas, test_targets, test_decoded = learn.get_preds(dl=test_dl, with_decoded=True, save_preds=None)
+		test_decoded]
+
+
+❌**RAM run out**
+
+</details>
+
+## TO DO
+- [ ] classification result accuracy evaluation
+- [x] add stable class re classify dataset(got bad result)
+- [ ] remote sensing mapping
+- [ ] D-InSAR detect surface deformation rely on change map(year of disturbance)
+
 
 [^1]:Kennedy, Robert E., Yang, Zhiqiang, & Cohen, Warren B. (2010). Detecting trends in forest disturbance and recovery using yearly Landsat time series: 1. LandTrendr - Temporal segmentation algorithms. Remote Sensing of Environment, 114, 2897-2910
 [^2]:Zhen Yang, Jing Li, Carl E. Zipper, Yingying Shen, Hui Miao, Patricia F. Donovan, Identification of the disturbance and trajectory types in mining areas using multitemporal remote sensing images,Science of The Total Environment,Volume 644,2018,Pages 916-927,ISSN 0048-9697,https://doi.org/10.1016/j.scitotenv.2018.06.341.
