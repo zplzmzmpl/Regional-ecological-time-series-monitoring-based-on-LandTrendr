@@ -1,5 +1,25 @@
 # Regional-ecological-time-series-monitoring-based-on-LandsatTrendr
-*Use long-term series remote sensing image data obtained by LLR and LT for time series clustering and classification based on deep learning.*
+*This repo use long-term series remote sensing image data obtained by LLR and LT for time series clustering and classification based on deep learning.*
+
+## 🧭Navigation
+
+- [1.Collect Data](#step-1-collect-data)
+- [2.Fit Change Curve](#step-2-fit-change-curveeg-tcg-index)
+- [3.Time Series Clustering](#step-3-time-series-clustering)
+  - [3.1 Intro KShape Clustering](#intro-kshape)
+  - [3.2 Usage in Python](#usage-in-python)
+  - [3.3 Evaluation](#evaluation)
+- [4.Time Series Classification](#step-4-time-series-classification)
+  - [4.1 Prepare Data](#prepare-training-data)
+  - [4.2 Training](#training-model)
+  - [4.3 Result](#classification-result)
+  - [4.5 TimeSeries2Image](#%EF%B8%8Ftime-series-to-image)
+    - [4.5.1 Convert ts 2 Img](#convert-time-series-to-images-classification)
+    - [4.5.2 Begin Training](#begin-training)
+    - [4.5.3 Apply to RS Img](#apply-model-to-rs-image)
+- [Output](#output-images)
+- [To Do List](#to-do)
+---
 
 ## 🤗STEP 1: Collect Data
 
@@ -23,23 +43,28 @@
   - Run ***LandTrendr*** and display the fitted collection on the map
   - Display the year and ***magnitude of the greatest disturbance*** during the time series
 
-<p align="center">
-  <img width="600" height="300" src="https://i.postimg.cc/ZYQphMtL/01.png">
-</p>
-
-<p align='center'>then you can get these asset in your GEE account</p>
-<p align="center">
-    <img src="https://i.postimg.cc/bvKjQnZb/02.jpg">
-</p>
-
-<p align='center'>after this you can get data after executing LandasatLinkr</p>
-<p align="center">
-    <img width='600' height='400' src="https://i.postimg.cc/d1QB1HBV/03.png">
-</p>
-
-  *now you need to storage data in `Google Drive` before you download it to local(becouse of gee doesn't support you dowanload to local directly)*
-  *you can follow this code to check data and download it to Drive. you also can use this [tool](https://emaprlab.users.earthengine.app/view/lt-gee-time-series-animator) developed by ***Justin Braaten*** to see 
-  the change map of your study area.*
+*the tutorial is detailed enough, you will get study area data named `LandTrendr` you needed if you follow it step by step in `asset` filefolder within your GEE account. you need to storage data in `Google Drive` before you download it to local(becouse of gee doesn't support you dowanload to local directly). you can follow this code to check data and download it to Drive:*
+		
+  		var lt = ee.Image('projects/your_account_name/assets/LandsatLinkr/041032/landtrendr');
+		// 50 Years! 
+		var start_yr = 1972;
+		var end_yr = 2022;
+		var ltr =  lt.select('LandTrendr');
+  
+		// Create the 50 year image collection from the LandTrendr output
+		var fittedRGBCols = llr.getFittedRgbCol(lt, start_yr, end_yr, rgb_bands, vis_params);
+  
+		// Get the ImageCollection
+		var collection = ee.ImageCollection(fittedRGBCols.rgb); // replace 'rgb' with the actual ID of your ImageCollection
+		
+		var batch = require('users/fitoprincipe/geetools:batch')
+		batch.Download.ImageCollection.toDrive(collection,"041032", {
+			scale: 30,
+		 	crs:'EPSG:3857',
+		  	region: geometry,
+		   	type:"float" });
+      
+*you also can use this [tool](https://emaprlab.users.earthengine.app/view/lt-gee-time-series-animator) developed by ***Justin Braaten*** to see the change map of your study area.*
 
 <p align="center">
     <img src="https://github.com/zplzmzmpl/Regional-ecological-time-series-monitoring-based-on-LandsatTrendr/blob/main/asset/slc1984-2023_rgb.gif">
@@ -99,13 +124,17 @@
 
   ## 🤖STEP 3: Time Series Clustering
   In this step we use **KShape**[^3] algorothm to achieve our ts data clustering. Before we begain, we'd better know what's **KShape**?
-  
+
+  ### Intro KShape
+  ---
   The KShape clustering method is a clustering algorithm based on time series data. It groups time series into different clusters by calculating the similarity between them. The key to the KShape clustering method is to match the shape of the time series, not just the numerical value. This enables KShape to discover time series that have similar shapes but not necessarily similar values. The KShape clustering method has wide applications in data analysis in various fields, including finance, medical and weather prediction.The basic steps of the KShape clustering method include:
   - Select the time series data set to cluster.
   - Calculate the similarity between time series, usually using methods such as dynamic time warping (DTW).
   - Clustering based on similarity, commonly used methods include k-means algorithm.
   - Analyze the clustering results and perform further interpretation and application as needed.
 
+  ### Usage in python
+  ---
   **There are two ways to use KShape by `python`**
 - KShape integrated in tslearn(only CPU engage in calulation)
   there is a simple example:
@@ -131,19 +160,21 @@
 	     print('\nend kshape gpu...')
 	     return ksg
   
-before we run KShape code, we need to define fixed number of clustering, for this we use **Elbow Law** to check probable number of clustering.
+   ### Elbow Law
+   ---
+   before we run KShape code, we need to define fixed number of clustering, for this we use **Elbow Law** to check probable number of clustering.
 
-       distortions = []
-       for i in range(4, 8):
-           print('cluster num:', i, '\n-------------')
-           ks = KShape(n_clusters=i, n_init=5, verbose=True, random_state=0)
-           # Perform clustering calculation
-           ks.fit(X)
-           distortions.append(ks.inertia_)
-        plt.plot(range(2, 7), distortions, marker='o')
-        plt.xlabel('Number of clusters')
-        plt.ylabel('Distortion')
-        plt.show()
+	       distortions = []
+	       for i in range(4, 8):
+	           print('cluster num:', i, '\n-------------')
+	           ks = KShape(n_clusters=i, n_init=5, verbose=True, random_state=0)
+	           # Perform clustering calculation
+	           ks.fit(X)
+	           distortions.append(ks.inertia_)
+	        plt.plot(range(2, 7), distortions, marker='o')
+	        plt.xlabel('Number of clusters')
+	        plt.ylabel('Distortion')
+	        plt.show()
   
   code above will return a plot like this, you can see *slop* become more gentle when value of *x* equal *5*, so we confirm number of clustering is *5*
   <p align="center">
@@ -152,18 +183,18 @@ before we run KShape code, we need to define fixed number of clustering, for thi
 
   but sometimes it is doesn't obvious just by this way, so we suggest use `yellowbrick` lib to visualize k-elow-law:
 	
- 	from yellowbrick.cluster import KElbowVisualizer	
-	#Instantiate the clustering model and visualizer
-	model = KShape(n_init=1, verbose=True, random_state=0)
-	
-	#distortion: mean sum of squared distances to centers
-	#silhouette: mean ratio of intra-cluster and nearest-cluster distance
-	#calinski_harabasz: ratio of within to between cluster dispersion
-	
-	visualizer = KElbowVisualizer(model, k=(4,10),metric='distortion')
-	
-	visualizer.fit(img_data)        # Fit the data to the visualizer
-	visualizer.show()        # Finalize and render the figure
+	 	from yellowbrick.cluster import KElbowVisualizer	
+		#Instantiate the clustering model and visualizer
+		model = KShape(n_init=1, verbose=True, random_state=0)
+		
+		#distortion: mean sum of squared distances to centers
+		#silhouette: mean ratio of intra-cluster and nearest-cluster distance
+		#calinski_harabasz: ratio of within to between cluster dispersion
+		
+		visualizer = KElbowVisualizer(model, k=(4,10),metric='distortion')
+		
+		visualizer.fit(img_data)        # Fit the data to the visualizer
+		visualizer.show()        # Finalize and render the figure
   
   here are visualizations of `elbow law` using three evaluation indexs with `yellowbrick` lib.
 
@@ -242,6 +273,9 @@ before we run KShape code, we need to define fixed number of clustering, for thi
     <img width='300' height='300' src="https://i.postimg.cc/T1hp091g/2.png" hsapce='10'>
   </p>
 
+
+### Evaluation
+---
 **but now😕, another question is how to evaluate accuracy of kshape clustering❓**
 
 *alas, tslearn does not seem to provide an evaluation method for KShape clustering. so we recommend you **modify the source code** to achieve it, more information click [here](https://blog.csdn.net/qq_37960007/article/details/107937212). let's see how to realize it. Officially, three similarity measures, dtw-dba, softdtw, and Euclidean distance, are provided in tslearn, but nothing about KShape clustering. Notice that source code, there `metric="precomputed"`, indicates that a user-defined distance metric is provided, which is good, and then the key to evaluating KShape using **`silhouette_score`** is here:*
@@ -298,7 +332,8 @@ so we add the `_get_norms` function, which is responsible for calculating the mo
 
 ## 🙉STEP 4: Time Series Classification
 
-- **prepare training data**
+- ### Prepare Training Data
+  ---
   
   generate training data according to paper[^2]:
   
@@ -321,7 +356,9 @@ so we add the `_get_norms` function, which is responsible for calculating the mo
     <p align="center">
     <img src="https://i.postimg.cc/PxbQnvLV/3.png">
     </p>
-- **begain training model**
+    
+- ### Training Model
+  ---
   
   *here we list standard procedures to train a model:*
   
@@ -337,7 +374,9 @@ so we add the `_get_norms` function, which is responsible for calculating the mo
   - apply it to rs image
   - evaluate accuracy
     
-- ***here are the classification result after training based on dataset we generated above.***
+- ### Classification Result
+  ---
+  ***here are the classification result after training based on dataset we generated above.***
 
   <p align="center"><img src="https://i.postimg.cc/9fJwQsvP/2.png">
   </p>
@@ -363,8 +402,8 @@ so we add the `_get_norms` function, which is responsible for calculating the mo
 <img width='300' height='300' src="https://i.postimg.cc/P5wF0p6Z/2.png">
 </p>
 
-### 🖼️***Time Series to Image***
-- ***convert time series to images classification***
+- ### 🖼️Time Series to Image
+  - #### convert time series to images classification
   
   we use `tsai` a friendly ts learning lib to achieve it. there are several methods to convert ts data to images:😮
   
@@ -423,7 +462,8 @@ so we add the `_get_norms` function, which is responsible for calculating the mo
    we choose use TsToGADF to create image after comparison. vasualize result after it:
    <p align="center"><img width='800' height='500' src="https://i.postimg.cc/nLZ8T2y9/1.png"></p>
    
-- ***begin training***
+    - #### begin training
+
 <div align=center>
 	
 |epoch|train_loss|valid_loss|accuracy|time|
@@ -440,7 +480,7 @@ so we add the `_get_norms` function, which is responsible for calculating the mo
 
 <p align="center"><img src="https://i.postimg.cc/sDWQFfLd/1.png"></p>
 
-- ***apply model to RS image***
+- #### apply model to RS image
   
 		from sklearn.preprocessing import MinMaxScaler
 		
@@ -464,6 +504,9 @@ so we add the `_get_norms` function, which is responsible for calculating the mo
 		test_decoded]
 
 ❌**failed becourse of RAM run out**
+
+## Output Images
+*on the way*😥
 
 ## TO DO
 - [ ] classification result accuracy evaluation
