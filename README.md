@@ -1,7 +1,7 @@
 # Regional-ecological-time-series-monitoring-based-on-LandsatTrendr
 *This repo use long-term series remote sensing image data obtained by LLR and LT for time series clustering and classification based on deep learning.*
 
-## 🧭Navigation
+## 🧭*Navigation*
 
 - [1.Collect Data](#step-1-collect-data)
 - [2.Fit Change Curve](#step-2-fit-change-curveeg-tcg-index)
@@ -125,7 +125,7 @@
   ## 🤖STEP 3: Time Series Clustering
   In this step we use **KShape**[^3] algorothm to achieve our ts data clustering. Before we begain, we'd better know what's **KShape**?
 
-  ### Intro KShape
+  ### *Intro KShape*
   ---
   The KShape clustering method is a clustering algorithm based on time series data. It groups time series into different clusters by calculating the similarity between them. The key to the KShape clustering method is to match the shape of the time series, not just the numerical value. This enables KShape to discover time series that have similar shapes but not necessarily similar values. The KShape clustering method has wide applications in data analysis in various fields, including finance, medical and weather prediction.The basic steps of the KShape clustering method include:
   - Select the time series data set to cluster.
@@ -133,7 +133,7 @@
   - Clustering based on similarity, commonly used methods include k-means algorithm.
   - Analyze the clustering results and perform further interpretation and application as needed.
 
-  ### Usage in python
+  ### *Usage in python*
   ---
   **There are two ways to use KShape by `python`**
 - KShape integrated in tslearn(only CPU engage in calulation)
@@ -160,7 +160,7 @@
 	     print('\nend kshape gpu...')
 	     return ksg
   
-   ### Elbow Law
+   ### *Elbow Law*
    ---
    before we run KShape code, we need to define fixed number of clustering, for this we use **Elbow Law** to check probable number of clustering.
 
@@ -273,8 +273,12 @@
     <img width='300' height='300' src="https://i.postimg.cc/T1hp091g/2.png" hsapce='10'>
   </p>
 
+---
+> [!NOTE]  
+> These steps will cost lots of time, keep patient🛏️.
+---
 
-### Evaluation
+### *Evaluation*
 ---
 **but now😕, another question is how to evaluate accuracy of kshape clustering❓**
 
@@ -328,11 +332,16 @@ so we add the `_get_norms` function, which is responsible for calculating the mo
 	    print(score)
        >>>output:0.026772646
 
+---
+> [!NOTE]  
+> These steps will cost amounts of RAM resource, make sure enough ram space👽.
+---
+
 **now, part of time series clustering is done. if you have interest about it, you also can try kmean➕dtw➕dba or kmeans➕softdtw. it's similar workflow. good luck😆**
 
 ## 🙉STEP 4: Time Series Classification
 
-- ### Prepare Training Data
+- ### *Prepare Training Data*
   ---
   
   generate training data according to paper[^2]:
@@ -357,7 +366,7 @@ so we add the `_get_norms` function, which is responsible for calculating the mo
     <img src="https://i.postimg.cc/PxbQnvLV/3.png">
     </p>
     
-- ### Training Model
+- ### *Training Model*
   ---
   
   *here we list standard procedures to train a model:*
@@ -374,7 +383,7 @@ so we add the `_get_norms` function, which is responsible for calculating the mo
   - apply it to rs image
   - evaluate accuracy
     
-- ### Classification Result
+- ### *Classification Result*
   ---
   ***here are the classification result after training based on dataset we generated above.***
 
@@ -402,8 +411,8 @@ so we add the `_get_norms` function, which is responsible for calculating the mo
 <img width='300' height='300' src="https://i.postimg.cc/P5wF0p6Z/2.png">
 </p>
 
-- ### 🖼️Time Series to Image
-  - #### convert time series to images classification
+- ### 🖼️*Time Series to Image*
+  - #### *convert time series to images classification*
   
   we use `tsai` a friendly ts learning lib to achieve it. there are several methods to convert ts data to images:😮
   
@@ -462,7 +471,7 @@ so we add the `_get_norms` function, which is responsible for calculating the mo
    we choose use TsToGADF to create image after comparison. vasualize result after it:
    <p align="center"><img width='800' height='500' src="https://i.postimg.cc/nLZ8T2y9/1.png"></p>
    
-    - #### begin training
+    - #### *begin training*
 
 <div align=center>
 	
@@ -480,7 +489,7 @@ so we add the `_get_norms` function, which is responsible for calculating the mo
 
 <p align="center"><img src="https://i.postimg.cc/sDWQFfLd/1.png"></p>
 
-- #### apply model to RS image
+- #### *apply model to RS image*
   
 		from sklearn.preprocessing import MinMaxScaler
 		
