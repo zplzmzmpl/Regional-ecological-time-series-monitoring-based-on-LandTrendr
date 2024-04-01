@@ -17,6 +17,7 @@
     - [4.5.1 Convert ts 2 Img](#convert-time-series-to-images-classification)
     - [4.5.2 Begin Training](#begin-training)
     - [4.5.3 Apply to RS Img](#apply-model-to-rs-image)
+- [5.SAR Detection](#step-5-sar-detection)
 - [Output](#output-images)
 - [To Do List](#to-do)
 ---
@@ -25,11 +26,11 @@
 
 **Using [`ee-LandsatLinkr`](https://github.com/gee-community/ee-LandsatLinkr) tools in GEE platform or python scrips developed by *Justin Braaten* & *Annie Taylor*.**
 
-- ### OPTION 1: Collect data with `google colab`🍕
+- ### Option 1: Collect data with `google colab`🍕
 
   Click me to get it!⚓ [![Click here to use it](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/gee-community/ee-LandsatLinkr/blob/main/colab_template.ipynb)
 
-- ### OPTION 2: Collect data in [`GEE`](https://code.earthengine.google.com/2ec3c28efc3ecf15504979a9698a8b0d?noload=true)🌏
+- ### Option 2: Collect data in [`GEE`](https://code.earthengine.google.com/2ec3c28efc3ecf15504979a9698a8b0d?noload=true)🌏
   *Follow these steps to complete your data collection*
 
   - View ***WRS-1*** granules - figure out what WRS-1 granule to process
@@ -513,6 +514,30 @@ so we add the `_get_norms` function, which is responsible for calculating the mo
 		test_decoded]
 
 ❌**failed becourse of RAM run out**
+
+## 📡STEP 5: SAR Detection
+
+LT will output *`yod`change map* which means the years of disturbance. for our study region, it would be like this:
+<div align='center'><img width='600' height='400' src="https://i.postimg.cc/zfyPY5nY/3.jpg"></div>
+
+use **ENVI** calculate image static, find study region got disturbed mainly in 2012:
+<div align='center'><img width='500' height='500' src="https://i.postimg.cc/3JCgN6K4/2.jpg"></div>
+
+we use imagies captured by *Sentinel-1 A&B* satellites, but consider that *Sentinel* was launched in 2014, so we choose another disturbance year, 2020~2021, both *A&B* satellites, ascending pass(fake true color with cmap/smap/fmap)
+<div align='center'><img width='600' src="https://i.postimg.cc/Dz8FtDv4/25.png"></div>
+<div align='center'><img width='600' src="https://i.postimg.cc/MZDdnvZm/5.jpg"></div>
+
+For a time series of  k  images, the exported change map consists of  k+2  bands, we gather 49 images, namely 51 bands.
+<div align='center'><img width='600' src="https://i.postimg.cc/CKDkHc3k/2.jpg"></div>
+
+- cmap: the interval of the most recent change, one band, byte values  ∈[0,k−1] , where 0 = no change.
+- smap: the interval of the first change, one band, byte values  ∈[0,k−1] , where 0 = no change.
+- fmap: the number of changes, one band, byte values  ∈[0,k−1] , where 0 = no changes.
+- bmap: the changes in each interval,   k−1  bands, byte values  ∈[0,3] , where 0 = no change, 1 = positive definite change, 2 = negative definite change, 3 = indefinite change.
+
+😣analyse later....
+
+---
 
 ## Output Images
 *on the way*😥
