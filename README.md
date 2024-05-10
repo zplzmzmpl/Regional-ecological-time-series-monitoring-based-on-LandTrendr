@@ -4,7 +4,7 @@
 ## 🧭*Navigation*
 
 - [1.Collect Data](#step-1-collect-data)
-- [2.Fit Change Curve](#step-2-fit-change-curveeg-tcg-index)
+- [2.Fit Change Curve](#step-2-fit-change-curveoptional)
 - [3.Time Series Clustering](#step-3-time-series-clustering)
   - [3.1 Intro KShape Clustering](#intro-kshape)
   - [3.2 Usage in Python](#usage-in-python)
@@ -30,7 +30,7 @@
 
   Click me to get it!⚓ [![Click here to use it](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/gee-community/ee-LandsatLinkr/blob/main/colab_template.ipynb)
 
-- ### Option 2: Collect data in [`GEE`](https://code.earthengine.google.com/2ec3c28efc3ecf15504979a9698a8b0d?noload=true)🌏
+- ### Option 2: Collect data in `Google Earth Engine`🌏
   *Follow these steps to complete your data collection*
 
   - View ***WRS-1*** granules - figure out what WRS-1 granule to process
@@ -46,24 +46,24 @@
 
 *the tutorial is detailed enough, you will get study area data named `LandTrendr` you needed if you follow it step by step in `asset` filefolder within your GEE account. you need to storage data in `Google Drive` before you download it to local(becouse of gee doesn't support you dowanload to local directly). you can follow this code to check data and download it to Drive:*
 		
-  		var lt = ee.Image('projects/your_account_name/assets/LandsatLinkr/041032/landtrendr');
-		// 50 Years! 
-		var start_yr = 1972;
-		var end_yr = 2022;
-		var ltr =  lt.select('LandTrendr');
-  
-		// Create the 50 year image collection from the LandTrendr output
-		var fittedRGBCols = llr.getFittedRgbCol(lt, start_yr, end_yr, rgb_bands, vis_params);
-  
-		// Get the ImageCollection
-		var collection = ee.ImageCollection(fittedRGBCols.rgb); // replace 'rgb' with the actual ID of your ImageCollection
-		
-		var batch = require('users/fitoprincipe/geetools:batch')
-		batch.Download.ImageCollection.toDrive(collection,"041032", {
-			scale: 30,
-		 	crs:'EPSG:3857',
-		  	region: geometry,
-		   	type:"float" });
+	var lt = ee.Image('projects/your_account_name/assets/LandsatLinkr/041032/landtrendr');
+	// 50 Years! 
+	var start_yr = 1972;
+	var end_yr = 2022;
+	var ltr =  lt.select('LandTrendr');
+
+	// Create the 50 year image collection from the LandTrendr output
+	var fittedRGBCols = llr.getFittedRgbCol(lt, start_yr, end_yr, rgb_bands, vis_params);
+
+	// Get the ImageCollection
+	var collection = ee.ImageCollection(fittedRGBCols.rgb); // replace 'rgb' with the actual ID of your ImageCollection
+	
+	var batch = require('users/fitoprincipe/geetools:batch')
+	batch.Download.ImageCollection.toDrive(collection,"041032", {
+		scale: 30,
+		crs:'EPSG:3857',
+		region: geometry,
+		type:"float" });
       
 *you also can use this [tool](https://emaprlab.users.earthengine.app/view/lt-gee-time-series-animator) developed by ***Justin Braaten*** to see the change map of your study area.*
 
@@ -73,16 +73,33 @@
 
 ***Congratulations!㊗️ As now you have got the original data!🎆***
 
+*If you want to do some preprocess to original images then using LT(writted as IDL) in local environment, just see **[step2](#step-2-fit-change-curveoptional)**. Or you want to get fitted data by LT-processed directly in GEE, **skip step2 and go to [step3](#step-3-time-series-clustering)**. now you can get fitted data follow this code after you have stored asset `LandTrendr` in your gee account:*
+
+	var lt = ee.Image('projects/your_account_name/assets/LandsatLinkr/041032/landtrendr');
+	// 50 Years! 
+	var start_yr = 1972;
+	var end_yr = 2022;
+	var years = []; // make an empty array to hold year band names
+	for (var i = start_yr; i <= end_yr; ++i) years.push('yr'+i.toString()); // fill the array with years from the startYear to the endYear and convert them to string
+	var ltr =  lt.select('ndvi_fit'); // just select bands as you want
+	var ndvi_ftv_Stack = ltr.arrayFlatten([years]);// flatten this out into bands, assigning the year as the band name
+	Export.image.toDrive({
+	  image:ndvi_ftv_Stack,
+	  scale:30,
+	  region:geometry,
+	  crs:'EPSG:3857'
+	});
+  
 ---
 > [!NOTE]  
 > These steps will cost lots of time, keep patient🛏️.
 ---
 
-## 😇STEP 2: Fit Change Curve(e.g. TCG index)
+## 😇STEP 2: Fit Change Curve(optional)
 - **use IDL to execute [`LandTrendr`](https://github.com/jdbcode/LLR-LandTrendr)**[^1]
   - *we develop a GUI to help users to use it.*
   <p align="center">
-    <img width='600' height='500' src="https://i.postimg.cc/hPTkFLLv/13.png">
+    <img width='600' height='500' src="./asset/02.png">
   </p>
   
   - *you'd better know what's meanings of these parameters before run it, following below intro:*
@@ -95,29 +112,27 @@
     | recoveryThreshold      | _Float_           | _0.25_      | If a segment has a recovery rate faster than 1/recoveryThreshold (in years), then the segment is disallowed                                        |
     | pvalThreshold          | _Float_           | _0.1_       | If the p-value of the fitted model exceeds this threshold, then the current model is discarded and another one is fitted using the Levenberg-Marquardt optimizer|
     | bestModelProportion    | _Float_           | _1.25_      | Takes the model with most vertices that has a p-value that is at most this proportion away from the model with lowest p-value                      |
-    | minObservationsNeeded  | _Integer_         | _6_         | Min observations needed to perform output fitting                                                                                                  |
-    | timeSeries             | _ImageCollection_ |             | Collection from which to extract trends (it’s assumed that each image in the collection represents one year). The first band is used to find breakpoints, and all subsequent bands are fitted using those breakpoints |
+    | minObservationsNeeded  | _Integer_         | _6_         | Min observations needed to perform output fitting                                                                                                  
 
   - *now see what we get*
     - **fitted curve**
-    - **vertices and values, like [1972,1999,2002,2021]**
+    - **vertices and values, like `[1972, 1999, 2002, 2021]`**
     - **final segments**
     - **[p value](https://www.investopedia.com/terms/p/p-value.asp)(lower is better)**
     - **[f statistic](https://www.statisticshowto.com/probability-and-statistics/f-statistic-value-test/)(bigger is better)**
   <p align="center">
-    <img width='600' height='300' src="https://i.postimg.cc/28T5WL6H/14.png">
-    <img src="https://i.postimg.cc/pT8fVJPc/17.png">
+    <img width='600' height='300' src="./asset/03.png">
   </p>
 
-  - *apply LT to all image, we get time series in 3 bands(ndvi/tcg/tcw), Salty Lake City as example*
+  - *apply LT to all image, we get time series in 3 bands(ndvi/tcg/tcw), a random sample in Salty Lake City as example*
   <p align="center">
-    <img width='500' height='500' src="https://i.postimg.cc/J05HvJ80/2.png">
+    <img width='500' height='500' src="./asset/05.png">
   </p>
 	
   - *but LT may be disable in some data (AKA `noise`), so after executing LT we had better apply a median filtering.*
     <p align="center">
-    <img width='300' height='300' src="https://i.postimg.cc/wTc49b24/2.png" hspace=10>
-      <img width='300' height='300' src="https://i.postimg.cc/nzS2X6gp/2.png" hspace=10>
+    <img width='300' height='300' src="./asset/06.png" hspace=10>
+      <img width='300' height='300' src="./asset/07.png" hspace=10>
   </p>
 
   Congratulations! As now you have got the processed data after LT algorithm!🤞
@@ -127,15 +142,16 @@
   In this step we use **KShape**[^3] algorothm to achieve our ts data clustering. Before we begain, we'd better know what's **KShape**?
 
   ### *Intro KShape*
-  ---
+
   The KShape clustering method is a clustering algorithm based on time series data. It groups time series into different clusters by calculating the similarity between them. The key to the KShape clustering method is to match the shape of the time series, not just the numerical value. This enables KShape to discover time series that have similar shapes but not necessarily similar values. The KShape clustering method has wide applications in data analysis in various fields, including finance, medical and weather prediction.The basic steps of the KShape clustering method include:
   - Select the time series data set to cluster.
   - Calculate the similarity between time series, usually using methods such as dynamic time warping (DTW).
   - Clustering based on similarity, commonly used methods include k-means algorithm.
   - Analyze the clustering results and perform further interpretation and application as needed.
+  ---
 
   ### *Usage in python*
-  ---
+
   **There are two ways to use KShape by `python`**
 - KShape integrated in tslearn(only CPU engage in calulation)
   there is a simple example:
@@ -160,9 +176,11 @@
 	     ksg.fit(np.expand_dims(X, axis=2))
 	     print('\nend kshape gpu...')
 	     return ksg
-  
-   ### *Elbow Law*
+
    ---
+
+   ### *Elbow Law*
+
    before we run KShape code, we need to define fixed number of clustering, for this we use **Elbow Law** to check probable number of clustering.
 
 	       distortions = []
@@ -177,9 +195,10 @@
 	        plt.ylabel('Distortion')
 	        plt.show()
   
-  code above will return a plot like this, you can see *slop* become more gentle when value of *x* equal *5*, so we confirm number of clustering is *5*
+  code above will return a plot like this, you can see *slop* become more gentle when value of *x* equal *5*, so we confirm number of clustering is *5*, but you'd better to draw the centriod to check correct categories, we finally choose 4 categories after drawing centriods of 4 and 5 categories condition.
+  
   <p align="center">
-    <img width='500' height='400' src="https://i.postimg.cc/ydNRrcHn/2.png">
+    <img width='500' height='400' src="./asset/08.png">
   </p>
 
   but sometimes it is doesn't obvious just by this way, so we suggest use `yellowbrick` lib to visualize k-elow-law:
@@ -200,19 +219,19 @@
   here are visualizations of `elbow law` using three evaluation indexs with `yellowbrick` lib.
 
 <p align="center">
-<img width='400' height='300' src="https://i.postimg.cc/fR31Cp9m/Calinski-Harabasz-Score-Elbow-for-KShape-Clustering.png">
-<img width='400' height='300' src="https://i.postimg.cc/7ZvNvWRg/Distortion-Score-Elbow-for-KShape-Clustering.png">
-<img width='400' height='300' src="https://i.postimg.cc/pV470xDC/Silhouette-Score-Elbow-for-KShape-Clustering.png">
+<img width='400' height='300' src="./asset/09.png">
+<img width='400' height='300' src="./asset/10.png">
+<img width='400' height='300' src="./asset/11.png">
 </p>
 
   now we can apply KShape to image data we got above with 51 bands, you can just cluster ***Univariate*** data, also you can cluster ***Multivariate*** data.
   
   **First of all, read data and convert to fomat of time series.**
-  - for univariate data clustering, like ndvi ts data [length(number of ts), time_span(51 for this), var(1 for this)]
+  - for univariate data clustering, like ndvi ts data `[length(number of ts), time_span(51 for this), variate(1 for this)]`
 
 	    import rasterio
 	    #Load the .tif image
-	    with rasterio.open("/content/NDVI51years_median.tif") as src:
+	    with rasterio.open("./NDVI51years.tif") as src:
 	        image_data = src.read()
 	        row = image_data.shape[1]
 	        column = image_data.shape[2]
@@ -225,7 +244,7 @@
 	    img_data = transposed_image_data.reshape(-1,transposed_image_data.shape[2])
 	    print('reshaped shape:', img_data.shape)
 
-  - for multivariate data clustering,like [ndvi, tcg, tcw] ts data [length(number of ts), time_span(51 for this), var(3 for this)]
+  - for multivariate data clustering,like `[ndvi, tcg, tcw]` ts data `[length(number of ts), time_span(51 for this), variate(3 for this)]`
     
 		import rasterio
 		import numpy as np
@@ -233,9 +252,9 @@
 	
 		#define image paths
 		image_paths = [
-			    '/*/*/*/ndvi51years_median.tif',
+			    './ndvi51years.tif',
 			     ·········
-			    '/*/*/*/tcw51years_median.tif'
+			    './tcw51years.tif'
 			]
 		#read image data and reshape to 4D array
 		combined_array = []
@@ -263,15 +282,15 @@
 	    		dst.update_tags(**metadata)
 **Second, draw centroid of clustering, take a look at how kshape breaks down the data into categories**
   <p align='center'>
-    <img width='400' height='300' src="https://i.postimg.cc/mrTnGqpB/kshape-cluster.png" hspace='10'>
-    <img width='400' height='300' src="https://i.postimg.cc/7Y388gP1/kshape-mul-5.png" hsapce='10'>
+    <img width='400' height='300' src="./asset/12.png" hspace='10'>
+    <img width='400' height='300' src="./asset/13.png" hsapce='10'>
   </p>
-  <p align='center'>univariate in the left and mulitvariate in the right</p>
+  <p align='center'>4 categories univariate in the left and 5 categories mulitvariate in the right</p>
 
 **Finally, check the result after kshape clustering(univariate for left and multivariate for right)🥳**
   <p align='center'>
-    <img width='300' height='300' src="https://i.postimg.cc/13X8tx8r/2.png" hspace='10'>
-    <img width='300' height='300' src="https://i.postimg.cc/T1hp091g/2.png" hsapce='10'>
+    <img width='300' height='300' src="./asset/14.png" hspace='10'>
+    <img width='300' height='300' src="./asset/15.png" hsapce='10'>
   </p>
 
 ---
@@ -280,7 +299,7 @@
 ---
 
 ### *Evaluation*
----
+
 **but now😕, another question is how to evaluate accuracy of kshape clustering❓**
 
 *alas, tslearn does not seem to provide an evaluation method for KShape clustering. so we recommend you **modify the source code** to achieve it, more information click [here](https://blog.csdn.net/qq_37960007/article/details/107937212). let's see how to realize it. Officially, three similarity measures, dtw-dba, softdtw, and Euclidean distance, are provided in tslearn, but nothing about KShape clustering. Notice that source code, there `metric="precomputed"`, indicates that a user-defined distance metric is provided, which is good, and then the key to evaluating KShape using **`silhouette_score`** is here:*
@@ -338,17 +357,16 @@ so we add the `_get_norms` function, which is responsible for calculating the mo
 > These steps will cost amounts of RAM resource, make sure enough ram space👽.
 ---
 
-**now, part of time series clustering is done. if you have interest about it, you also can try kmean➕dtw➕dba or kmeans➕softdtw. it's similar workflow. good luck😆**
+**now, part of time series clustering is done. if you have interest about it, you also can try kmean➕dtw➕dba or kmeans➕softdtw. it's similar workflow. good luck😄**
 
 ## 🙉STEP 4: Time Series Classification
 
 - ### *Prepare Training Data*
-  ---
   
-  generate training data according to paper[^2]:
+  we generate training data refer to paper[^2] and add some classic categories:
   
   <p align="center">
-    <img width='700' height='900' src="https://i.postimg.cc/J4wFjj8v/2.png">
+    <img width='700' height='900' src="./asset/16.png">
   </p>
 
   - (1) The sample point was disturbed during the study period but not restored and failed to exhibit vegetation recovery. It is classified as DN and its NDVI values oscillate below the vegetation threshold after a sharp decrease (a).
@@ -362,55 +380,47 @@ so we add the `_get_norms` function, which is responsible for calculating the mo
   to a level that is no less than the vegetation threshold with little change in last several years (f).
   - (7) The sample points exhibited disturbances two or more times (g and h). They are classified as CD, meaning that they had complex disturbance histories.
 
-  use code to generate relative pure training data:
-    <p align="center">
-    <img src="https://i.postimg.cc/PxbQnvLV/3.png">
-    </p>
+  we divide them to 6 categories and generate relative pure training data by code. they are `{0:downward, 1:dowaward then upward, 2:upward, 3:upward then downward, 4:stable, 5:multi disturbance}`
+  
+  |![](./asset/down.png)|![](./asset/down_then_up.png)|
+  |![](./asset/up.png)|![](./asset/up_then_down.png)|
+  |![](./asset/stable.png)|![](./asset/multi_disturbance.png)|
+  
+  ---
     
 - ### *Training Model*
-  ---
-  
-  *here we list standard procedures to train a model:*
-  
-  - choose model(like `minirocket`,`transformer`,`timesnet` and so on)
-  - normalize raw data(if needed) and visualize it
-  - build learner
-  - find best learning_rate
-  - training
-  - optimize hyperparameter
-  - training
-  - validation accuracy
-  - visualize result
-  - apply it to rs image
-  - evaluate accuracy
+  see code we upload in repo. test it in validation dataset
+  <p align="center"><img src="./asset/24.png">
+  </p>
     
 - ### *Classification Result*
-  ---
   ***here are the classification result after training based on dataset we generated above.***
 
-  <p align="center"><img src="https://i.postimg.cc/9fJwQsvP/2.png">
+  <p align="center"><img src="./asset/17.png">
   </p>
 
   <p align='center'>model info</p>
 
 <div align=center>
 
-| Model            | training accuracy | validation accuracy | training loss | validaion loss | actual accuracy |
+| Model            | training accuracy | validation accuracy | training loss | validaion loss | accuracy in imgs |
 |------------------|-------------------|---------------------|---------------|----------------|-----------------|
-| InceptionTime    | 0.939286          | 0.9393              | 0.173723      | 0.157058       | i'm tring       |
-| BOSSVS           | 0.792857          | N/A                 | N/A           | N/A            | i'm tring       |
-| TimeSeriesForest | 0.939285          | N/A                 | N/A           | N/A            | i'm tring       |
-| CNN Classifier   | 0.921428          | N/A                 | N/A           | N/A            | i'm tring       |
-| MiniRocket       | 0.939286          | N/A                 | 0.176533      | 0.186470       | i'm tring       |
-| Tansformer       | 0.941667          | 0.9542              | 0.571105      | 0.612427       | i'm tring       |
+| InceptionTime    | 0.939286          | 0.9393              | 0.173723      | 0.157058       | 82%     	|
+| Tansformer       | 0.941667          | 0.9542              | 0.571105      | 0.612427       | 80%		|
+| MiniRocket       | 0.939286          | N/A                 | 0.176533      | 0.186470       | 72%		|
+| CNN Classifier   | 0.921428          | N/A                 | N/A           | N/A            | 63%		|
+| TimeSeriesForest | 0.939285          | N/A                 | N/A           | N/A            | 60%		|
+| BOSSVS           | 0.792857          | N/A                 | N/A           | N/A            | 53%		|
 
 </div>
 
 *you can also draw picture to check predicted probal per ture class and confusion matrix after training, like this:*
   <p align="center">
-<img width='300' height='300' src="https://i.postimg.cc/JzxBrKdW/2.png">
-<img width='300' height='300' src="https://i.postimg.cc/P5wF0p6Z/2.png">
+<img width='300' height='300' src="./asset/18.png">
+<img width='300' height='300' src="./asset/19.png">
 </p>
+
+---
 
 - ### 🖼️*Time Series to Image*
   - #### *convert time series to images classification*
@@ -432,7 +442,7 @@ so we add the `_get_norms` function, which is responsible for calculating the mo
 		import tsai
 		
 		# Read the CSV file
-		df = pd.read_csv('/content/datasets.csv')
+		df = pd.read_csv('./datasets.csv')
 		
 		# Convert the 'dataset' column to numpy arrays
 		df['dataset'] = df['dataset'].apply(lambda x: np.array(eval(x)))
@@ -467,10 +477,10 @@ so we add the `_get_norms` function, which is responsible for calculating the mo
 		    xb[0].show()
 		    plt.show()
     ts data will be displayed as image like this:
-    <p align="center"><img src="https://i.postimg.cc/qBW895jY/1.png"></p>
+    <p align="center"><img src="./asset/21.png"></p>
 
    we choose use TsToGADF to create image after comparison. vasualize result after it:
-   <p align="center"><img width='800' height='500' src="https://i.postimg.cc/nLZ8T2y9/1.png"></p>
+   <p align="center"><img width='800' height='500' src="./asset/22.png"></p>
    
     - #### *begin training*
 
@@ -488,7 +498,7 @@ so we add the `_get_norms` function, which is responsible for calculating the mo
  
 </div>
 
-<p align="center"><img src="https://i.postimg.cc/sDWQFfLd/1.png"></p>
+<p align="center"><img src="./asset/23.png"></p>
 
 - #### *apply model to RS image*
   
@@ -518,17 +528,17 @@ so we add the `_get_norms` function, which is responsible for calculating the mo
 ## 📡STEP 5: SAR Detection
 
 LT will output *`yod`change map* which means the years of disturbance. for our study region, it would be like this:
-<div align='center'><img width='600' height='400' src="https://i.postimg.cc/zfyPY5nY/3.jpg"></div>
+<div align='center'><img width='600' height='400' src="./asset/20.jpg"></div>
 
 use **ENVI** calculate image static, find study region got disturbed mainly in 2012:
-<div align='center'><img width='500' height='500' src="https://i.postimg.cc/3JCgN6K4/2.jpg"></div>
+<div align='center'><img width='500' height='500' src="./asset/25.jpg"></div>
 
 we use imagies captured by *Sentinel-1 A&B* satellites, but consider that *Sentinel* was launched in 2014, so we choose another disturbance year, 2020~2021, both *A&B* satellites, ascending pass(fake true color with cmap/smap/fmap)
-<div align='center'><img width='600' src="https://i.postimg.cc/Dz8FtDv4/25.png"></div>
-<div align='center'><img width='600' src="https://i.postimg.cc/MZDdnvZm/5.jpg"></div>
+
+<div align='center'><img width='600' src="./asset/27.jpg"></div>
 
 For a time series of  k  images, the exported change map consists of  k+2  bands, we gather 49 images, namely 51 bands.
-<div align='center'><img width='600' src="https://i.postimg.cc/CKDkHc3k/2.jpg"></div>
+<div align='center'><img width='600' src="./asset/28.jpg"></div>
 
 - cmap: the interval of the most recent change, one band, byte values  ∈[0,k−1] , where 0 = no change.
 - smap: the interval of the first change, one band, byte values  ∈[0,k−1] , where 0 = no change.
@@ -543,10 +553,10 @@ For a time series of  k  images, the exported change map consists of  k+2  bands
 *on the way*😥
 
 ## TO DO
-- [ ] classification result accuracy evaluation
-- [x] add stable class re classify dataset(got bad result)
+- [x] classification result accuracy evaluation
+- [x] add more reliable class to classify dataset
 - [ ] remote sensing mapping
-- [ ] D-InSAR detect surface deformation rely on change map(year of disturbance)
+- [x] D-InSAR detect surface deformation rely on change map(year of disturbance)
 
 
 [^1]:Kennedy, Robert E., Yang, Zhiqiang, & Cohen, Warren B. (2010). Detecting trends in forest disturbance and recovery using yearly Landsat time series: 1. LandTrendr - Temporal segmentation algorithms. Remote Sensing of Environment, 114, 2897-2910
