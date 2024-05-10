@@ -51,10 +51,10 @@
 	var start_yr = 1972;
 	var end_yr = 2022;
 	var ltr =  lt.select('LandTrendr');
-
+	
 	// Create the 50 year image collection from the LandTrendr output
 	var fittedRGBCols = llr.getFittedRgbCol(lt, start_yr, end_yr, rgb_bands, vis_params);
-
+	
 	// Get the ImageCollection
 	var collection = ee.ImageCollection(fittedRGBCols.rgb); // replace 'rgb' with the actual ID of your ImageCollection
 	
@@ -64,7 +64,7 @@
 		crs:'EPSG:3857',
 		region: geometry,
 		type:"float" });
-      
+
 *you also can use this [tool](https://emaprlab.users.earthengine.app/view/lt-gee-time-series-animator) developed by ***Justin Braaten*** to see the change map of your study area.*
 
 <p align="center">
@@ -89,7 +89,7 @@
 	  region:geometry,
 	  crs:'EPSG:3857'
 	});
-  
+
 ---
 > [!NOTE]  
 > These steps will cost lots of time, keep patient🛏️.
@@ -133,7 +133,7 @@
     <p align="center">
     <img width='300' height='300' src="./asset/06.png" hspace=10>
       <img width='300' height='300' src="./asset/07.png" hspace=10>
-  </p>
+    </p>
 
   Congratulations! As now you have got the processed data after LT algorithm!🤞
   If you want to know more infomation about LandTrendr algorithm, we recommend you follow this [`link`](https://emapr.github.io/LT-GEE/index.html)🥳
@@ -204,17 +204,17 @@
   but sometimes it is doesn't obvious just by this way, so we suggest use `yellowbrick` lib to visualize k-elow-law:
 	
 	 	from yellowbrick.cluster import KElbowVisualizer	
-		#Instantiate the clustering model and visualizer
-		model = KShape(n_init=1, verbose=True, random_state=0)
-		
-		#distortion: mean sum of squared distances to centers
-		#silhouette: mean ratio of intra-cluster and nearest-cluster distance
-		#calinski_harabasz: ratio of within to between cluster dispersion
-		
-		visualizer = KElbowVisualizer(model, k=(4,10),metric='distortion')
-		
-		visualizer.fit(img_data)        # Fit the data to the visualizer
-		visualizer.show()        # Finalize and render the figure
+	 	#Instantiate the clustering model and visualizer
+	 	model = KShape(n_init=1, verbose=True, random_state=0)
+	 	
+	 	#distortion: mean sum of squared distances to centers
+	 	#silhouette: mean ratio of intra-cluster and nearest-cluster distance
+	 	#calinski_harabasz: ratio of within to between cluster dispersion
+	 	
+	 	visualizer = KElbowVisualizer(model, k=(4,10),metric='distortion')
+	 	
+	 	visualizer.fit(img_data)        # Fit the data to the visualizer
+	 	visualizer.show()        # Finalize and render the figure
   
   here are visualizations of `elbow law` using three evaluation indexs with `yellowbrick` lib.
 
@@ -225,7 +225,7 @@
 </p>
 
   now we can apply KShape to image data we got above with 51 bands, you can just cluster ***Univariate*** data, also you can cluster ***Multivariate*** data.
-  
+
   **First of all, read data and convert to fomat of time series.**
   - for univariate data clustering, like ndvi ts data `[length(number of ts), time_span(51 for this), variate(1 for this)]`
 
@@ -239,7 +239,7 @@
 	        transposed_image_data = np.transpose(image_data, (1, 2, 0))
 	
 	    print('transposed shape:', transposed_image_data.shape)
-	
+	    
 	    #Reshape the image data to (rows * columns, bands)
 	    img_data = transposed_image_data.reshape(-1,transposed_image_data.shape[2])
 	    print('reshaped shape:', img_data.shape)
@@ -259,28 +259,28 @@
 		#read image data and reshape to 4D array
 		combined_array = []
 		for path in image_paths:
-	    	with rasterio.open(path) as src:
-	        	array = src.read()
-	        	reshaped_array = array.reshape(array.shape[0], -1)
-	        	combined_array.append(reshaped_array)
-	        	if path == image_paths[0]:
-	          		metadata = src.profile
-	          		print(metadata)
-	
+			with rasterio.open(path) as src:
+		    	array = src.read()
+		    	reshaped_array = array.reshape(array.shape[0], -1)
+		    	combined_array.append(reshaped_array)
+		    	if path == image_paths[0]:
+		      		metadata = src.profile
+		      		print(metadata)
+		
 		#convert list to array
 		combined_array = np.array(combined_array)
-	
+		
 		#transpose array to fomat as requires
 		combined_array = combined_array.transpose(2, 1, 0)
-	
+		
 		print(combined_array.shape)
 		#save as npy file, you will don't need to read raster data again and again
 		np.save("/*/tsdata_samples_51_3.npy",combined_array)
-	
-	 	#save metadata
+		
+		#save metadata
 		with rasterio.open('/*/metadata.tif', 'w', **metadata) as dst:
-	    		dst.update_tags(**metadata)
-**Second, draw centroid of clustering, take a look at how kshape breaks down the data into categories**
+				dst.update_tags(**metadata)
+    **Second, draw centroid of clustering, take a look at how kshape breaks down the data into categories**
   <p align='center'>
     <img width='400' height='300' src="./asset/12.png" hspace='10'>
     <img width='400' height='300' src="./asset/13.png" hsapce='10'>
@@ -350,7 +350,7 @@ so we add the `_get_norms` function, which is responsible for calculating the mo
 	    #calculate silhouette score
 	    score = silhouette_score(dists,y_pred,metric="precomputed")
 	    print(score)
-       >>>output:0.026772646
+	   >>>output:0.026772646
 
 ---
 > [!NOTE]  
@@ -380,19 +380,25 @@ so we add the `_get_norms` function, which is responsible for calculating the mo
   to a level that is no less than the vegetation threshold with little change in last several years (f).
   - (7) The sample points exhibited disturbances two or more times (g and h). They are classified as CD, meaning that they had complex disturbance histories.
 
-  we divide them to 6 categories and generate relative pure training data by code. they are `{0:downward, 1:dowaward then upward, 2:upward, 3:upward then downward, 4:stable, 5:multi disturbance}`
+  we divide them to 6 categories and generate relative pure training data by code. They are `{0 : downward, 1 : dowaward then upward, 2 : upward, 3 : upward then downward, 4 : stable, 5 : multi disturbance}`
   
-  |![](./asset/down.png)|![](./asset/down_then_up.png)|
-  |![](./asset/up.png)|![](./asset/up_then_down.png)|
-  |![](./asset/stable.png)|![](./asset/multi_disturbance.png)|
+  
+  
+  |                      downward                      |                     downward then upward                     |
+  | :------------------------------------------------: | :----------------------------------------------------------: |
+  |  <img src="./asset/down.png" style="zoom:70%;" />  |   <img src="./asset/down_then_up.png" style="zoom:70%;" />   |
+  |                     **upward**                     |                   **upward then downward**                   |
+  |   <img src="./asset/up.png" style="zoom:70%;" />   |   <img src="./asset/up_then_down.png" style="zoom:70%;" />   |
+  |                     **stable**                     |                    **multi disturbance**                     |
+  | <img src="./asset/stable.png" style="zoom:70%;" /> | <img src="./asset/multi_disturbance.png" style="zoom:70%;" /> |
   
   ---
-    
+  
 - ### *Training Model*
   see code we upload in repo. test it in validation dataset
   <p align="center"><img src="./asset/24.png">
   </p>
-    
+  
 - ### *Classification Result*
   ***here are the classification result after training based on dataset we generated above.***
 
@@ -481,21 +487,21 @@ so we add the `_get_norms` function, which is responsible for calculating the mo
 
    we choose use TsToGADF to create image after comparison. vasualize result after it:
    <p align="center"><img width='800' height='500' src="./asset/22.png"></p>
-   
+  
     - #### *begin training*
 
 <div align=center>
-	
+
 |epoch|train_loss|valid_loss|accuracy|time|
-|:----|:----|:----|:----|:----|
+|:---:|:----|:----|:----|:----|
 |0|1.825284|1.758930|0.225000|00:09|
 |1|1.620805|1.517212|0.496429|00:08|
 |2|1.432231|1.289679|0.607143|00:08|
-····
+|····|||||
 |97|0.000065|0.233326|0.946429|00:08|
 |98|0.000066|0.248137|0.946429|00:08|
 |99|0.000064|0.244490|0.950000|00:08|
- 
+
 </div>
 
 <p align="center"><img src="./asset/23.png"></p>
@@ -528,17 +534,17 @@ so we add the `_get_norms` function, which is responsible for calculating the mo
 ## 📡STEP 5: SAR Detection
 
 LT will output *`yod`change map* which means the years of disturbance. for our study region, it would be like this:
-<div align='center'><img width='600' height='400' src="./asset/20.jpg"></div>
+<div align='center'><img width='600' height='600' src="./asset/20.png"></div>
 
 use **ENVI** calculate image static, find study region got disturbed mainly in 2012:
-<div align='center'><img width='500' height='500' src="./asset/25.jpg"></div>
+<div align='center'><img width='500' height='500' src="./asset/25.png"></div>
 
-we use imagies captured by *Sentinel-1 A&B* satellites, but consider that *Sentinel* was launched in 2014, so we choose another disturbance year, 2020~2021, both *A&B* satellites, ascending pass(fake true color with cmap/smap/fmap)
+we use images captured by *Sentinel-1 A&B* satellites, but consider that *Sentinel* was launched in 2014, so we choose another disturbance year, 2020~2021, both *A&B* satellites, ascending pass(fake true color with cmap/smap/fmap)
 
 <div align='center'><img width='600' src="./asset/27.jpg"></div>
 
 For a time series of  k  images, the exported change map consists of  k+2  bands, we gather 49 images, namely 51 bands.
-<div align='center'><img width='600' src="./asset/28.jpg"></div>
+<div align='center'><img width='600' src="./asset/28.png"></div>
 
 - cmap: the interval of the most recent change, one band, byte values  ∈[0,k−1] , where 0 = no change.
 - smap: the interval of the first change, one band, byte values  ∈[0,k−1] , where 0 = no change.
