@@ -1,10 +1,10 @@
-# Regional-ecological-time-series-monitoring-based-on-LandsatTrendr
+# Regional-ecological-time-series-monitoring-based-on-LandTrendr
 *This repo use long-term series remote sensing image data obtained by LLR and LT for time series clustering and classification based on deep learning.*
 
 ## 🧭*Navigation*
 
 - [1.Collect Data](#step-1-collect-data)
-- [2.Fit Change Curve](#step-2-fit-change-curveoptional)
+- [2.Fit Change Curve(optional)](#step-2-fit-change-curveoptional)
 - [3.Time Series Clustering](#step-3-time-series-clustering)
   - [3.1 Intro KShape Clustering](#intro-kshape)
   - [3.2 Usage in Python](#usage-in-python)
@@ -65,11 +65,12 @@
 		region: geometry,
 		type:"float" });
 
-*you also can use this [tool](https://emaprlab.users.earthengine.app/view/lt-gee-time-series-animator) developed by ***Justin Braaten*** to see the change map of your study area.*
+*you also can use this [tool](https://emaprlab.users.earthengine.app/view/lt-gee-time-series-animator) developed by ***Justin Braaten*** to see the change map of your study area.
 
 <p align="center">
-    <img src="https://github.com/zplzmzmpl/Regional-ecological-time-series-monitoring-based-on-LandsatTrendr/blob/main/asset/slc1984-2023_rgb.gif">
+    <img src="./asset/slc1984-2023_rgb.gif">
 </p>
+
 
 ***Congratulations!㊗️ As now you have got the original data!🎆***
 
@@ -89,6 +90,15 @@
 	  region:geometry,
 	  crs:'EPSG:3857'
 	});
+	
+	// export change map
+	// Change Event Detection Year: ('yod' year)
+	// Magnitude of the change event: (absolute value of the spectrum increment of the 'mag' change event)
+	// Duration of Change Event: ('dur' years)
+	// Event Spectral Value Before Change: ('preval' Spectral Value)
+	// Spectral rate of change of event 'rate'( mag/dur)
+	// DSNR 'dsnr' (mag/fit rmse) multiplied by 100 to preserve the two-digit decimal precision of the Int16 data.
+	see change map code in this repo
 
 ---
 > [!NOTE]  
@@ -543,7 +553,7 @@ we use images captured by *Sentinel-1 A&B* satellites, but consider that *Sentin
 
 <div align='center'><img width='600' src="./asset/27.jpg"></div>
 
-For a time series of  k  images, the exported change map consists of  k+2  bands, we gather 49 images, namely 51 bands.
+For a time series of  k  images, the exported change map consists of  k+2  bands, we gather 19 images, namely 21 bands.
 <div align='center'><img width='600' src="./asset/28.png"></div>
 
 - cmap: the interval of the most recent change, one band, byte values  ∈[0,k−1] , where 0 = no change.
@@ -551,12 +561,16 @@ For a time series of  k  images, the exported change map consists of  k+2  bands
 - fmap: the number of changes, one band, byte values  ∈[0,k−1] , where 0 = no changes.
 - bmap: the changes in each interval,   k−1  bands, byte values  ∈[0,3] , where 0 = no change, 1 = positive definite change, 2 = negative definite change, 3 = indefinite change.
 
+<div align='center'><img width='600' src="./asset/slc-sar-det-20-21.png"></div>
+
+*Proportion of changed pixels in a small aoi around the main dock in Salty Lake City for a 19-image time sequence. There were about 360000 pixels in all in the aoi. Note the (approximate) alternation of arrivals (positive definite changes) and departures (negative definite changes).*
+
 😣analyse later....
 
 ---
 
 ## Output Images
-*on the way*😥
+*sorting...on the way...*😥
 
 ## TO DO
 - [x] classification result accuracy evaluation
