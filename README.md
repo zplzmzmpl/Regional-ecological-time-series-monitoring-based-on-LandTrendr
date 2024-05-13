@@ -1,5 +1,5 @@
 # Regional-ecological-time-series-monitoring-based-on-LandTrendr
-*This repo use long-term series remote sensing image data obtained by LLR and LT for time series clustering and classification based on deep learning.*
+*This repo use time series remote sensing image data obtained by LLR&LT for time series clustering and classification based on deep learning.*
 
 ## 🧭*Navigation*
 
@@ -31,28 +31,31 @@
   Click me to get it!⚓ [![Click here to use it](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/gee-community/ee-LandsatLinkr/blob/main/colab_template.ipynb)
 
 - ### Option 2: Collect data in `Google Earth Engine`🌏
-  *Follow these steps to complete your data collection*
+  *Follow these steps to complete your data collection, follow this [code](./LLR-LT-GEE/landsatlinkr01.js) according to LLR official tutorial. **You can get all years RS images processed by `LandTrendr` in this code.***
 
-  - View ***WRS-1*** granules - figure out what WRS-1 granule to process
+  - View WRS-1 granules - figure out what WRS-1 granule to process
   - Make a processing [***dir***](https://gist.github.com/jdbcode/36f5a04329d5d85c43c0408176c51e6)
-  - Create MSS WRS-1 ***reference*** image - for MSS WRS1 to MSS WRS2 harmonization
-  - View ***WRS-1 collection*** - identify bad MSS images
+  - Create MSS WRS-1 reference image - for MSS WRS1 to MSS WRS2 harmonization
+  - View WRS-1 collection - identify bad MSS images
   - Prepare MSS WRS-1 images
-  - Get ***TM-to-MSS correction coefficients***.
-  - Export MSS-to-TM ***corrected*** images
-  - Inspect the full ***time series collection*** - explore time series via animation and inspector tool to check for noise
-  - Run ***LandTrendr*** and display the fitted collection on the map
-  - Display the year and ***magnitude of the greatest disturbance*** during the time series
+  - Get TM-to-MSS correction coefficients.
+  - Export MSS-to-TM corrected images
+  - Inspect the full time series collection - explore time series via animation and inspector tool to check for noise
+  - Run LandTrendr and display the fitted collection on the map
+  - Display the year and magnitude of the greatest disturbance during the time series
+  
+  ***If you don't need original data, all you want is just fitted data, follow this [code](./LLR-LT-GEE/landsatlinkr02.js) (RECOMMENDED)***
 
-*the tutorial is detailed enough, you will get study area data named `LandTrendr` you needed if you follow it step by step in `asset` filefolder within your GEE account. you need to storage data in `Google Drive` before you download it to local(becouse of gee doesn't support you dowanload to local directly). you can follow this code to check data and download it to Drive:*
+*the tutorial is detailed enough, you will get study area data named `LandTrendr` you needed if you follow it step by step in `asset` file folder within your GEE account. you need to storage data in `Google Drive` before you download it to local(because gee doesn't support you download to local directly). you can follow this code to check data and download it to Drive:*
 		
-	var lt = ee.Image('projects/your_account_name/assets/LandsatLinkr/041032/landtrendr');
+
+	var lt = ee.Image('projects/your_account_name/assets/LandsatLinkr/granules_IDs/landtrendr');
 	// 50 Years! 
 	var start_yr = 1972;
 	var end_yr = 2022;
 	var ltr =  lt.select('LandTrendr');
 	
-	// Create the 50 year image collection from the LandTrendr output
+	// Create the all years image collection from the LandTrendr output
 	var fittedRGBCols = llr.getFittedRgbCol(lt, start_yr, end_yr, rgb_bands, vis_params);
 	
 	// Get the ImageCollection
@@ -65,7 +68,7 @@
 		region: geometry,
 		type:"float" });
 
-*you also can use this [tool](https://emaprlab.users.earthengine.app/view/lt-gee-time-series-animator) developed by ***Justin Braaten*** to see the change map of your study area.
+*you also can use this [tool](https://emaprlab.users.earthengine.app/view/lt-gee-time-series-animator) developed by Justin Braaten to see the change of your study area.*
 
 <p align="center">
     <img src="./asset/slc1984-2023_rgb.gif">
@@ -74,7 +77,9 @@
 
 ***Congratulations!㊗️ As now you have got the original data!🎆***
 
-*If you want to do some preprocess to original images then using LT(writted as IDL) in local environment, just see **[step2](#step-2-fit-change-curveoptional)**. Or you want to get fitted data by LT-processed directly in GEE, **skip step2 and go to [step3](#step-3-time-series-clustering)**. now you can get fitted data follow this code after you have stored asset `LandTrendr` in your gee account:*
+*If you want to do some preprocess to original images then using LT(written as IDL) in local environment and have run official code, just see **[step2](#step-2-fit-change-curveoptional)**. But LLR may don't work in some region you are interested if you follow LT official tutorial or it's not need for you to obtain images before 1986, so we modify source code to help you achieve this and get change map, you can get it [here](./LLR-LT-GEE/lt_without_mss.js).*
+
+*Or you want to get fitted data by LT-processed directly in GEE, you can follow this [code](./LLR-LT-GEE/landsatlinkr02.js) and **skip step2 and go to [step3](#step-3-time-series-clustering)** after you have completed this step. Now you can get fitted data follow this code after you have stored asset `LandTrendr` in your gee account.*
 
 	var lt = ee.Image('projects/your_account_name/assets/LandsatLinkr/041032/landtrendr');
 	// 50 Years! 
@@ -106,7 +111,8 @@
 ---
 
 ## 😇STEP 2: Fit Change Curve(optional)
-- **use IDL to execute [`LandTrendr`](https://github.com/jdbcode/LLR-LandTrendr)**[^1]
+- **use [IDL code](./LT-IDL) to execute [`LandTrendr`](https://github.com/jdbcode/LLR-LandTrendr)**[^1]
+  
   - *we develop a GUI to help users to use it.*
   <p align="center">
     <img width='600' height='500' src="./asset/02.png">
@@ -123,7 +129,7 @@
     | pvalThreshold          | _Float_           | _0.1_       | If the p-value of the fitted model exceeds this threshold, then the current model is discarded and another one is fitted using the Levenberg-Marquardt optimizer|
     | bestModelProportion    | _Float_           | _1.25_      | Takes the model with most vertices that has a p-value that is at most this proportion away from the model with lowest p-value                      |
     | minObservationsNeeded  | _Integer_         | _6_         | Min observations needed to perform output fitting                                                                                                  
-
+  
   - *now see what we get*
     - **fitted curve**
     - **vertices and values, like `[1972, 1999, 2002, 2021]`**
@@ -133,35 +139,37 @@
   <p align="center">
     <img width='600' height='300' src="./asset/03.png">
   </p>
-
+  
   - *apply LT to all image, we get time series in 3 bands(ndvi/tcg/tcw), a random sample in Salty Lake City as example*
   <p align="center">
     <img width='500' height='500' src="./asset/05.png">
-  </p>
-	
+	</p>
+  
   - *but LT may be disable in some data (AKA `noise`), so after executing LT we had better apply a median filtering.*
     <p align="center">
     <img width='300' height='300' src="./asset/06.png" hspace=10>
       <img width='300' height='300' src="./asset/07.png" hspace=10>
     </p>
-
+  
   Congratulations! As now you have got the processed data after LT algorithm!🤞
   If you want to know more infomation about LandTrendr algorithm, we recommend you follow this [`link`](https://emapr.github.io/LT-GEE/index.html)🥳
+  
+  
 
   ## 🤖STEP 3: Time Series Clustering
   In this step we use **KShape**[^3] algorothm to achieve our ts data clustering. Before we begain, we'd better know what's **KShape**?
-
+  
   ### *Intro KShape*
-
+  
   The KShape clustering method is a clustering algorithm based on time series data. It groups time series into different clusters by calculating the similarity between them. The key to the KShape clustering method is to match the shape of the time series, not just the numerical value. This enables KShape to discover time series that have similar shapes but not necessarily similar values. The KShape clustering method has wide applications in data analysis in various fields, including finance, medical and weather prediction.The basic steps of the KShape clustering method include:
   - Select the time series data set to cluster.
   - Calculate the similarity between time series, usually using methods such as dynamic time warping (DTW).
   - Clustering based on similarity, commonly used methods include k-means algorithm.
   - Analyze the clustering results and perform further interpretation and application as needed.
   ---
-
+  
   ### *Usage in python*
-
+  
   **There are two ways to use KShape by `python`**
 - KShape integrated in tslearn(only CPU engage in calulation)
   there is a simple example:
@@ -563,14 +571,14 @@ For a time series of  k  images, the exported change map consists of  k+2  bands
 
 <div align='center'><img width='600' src="./asset/slc-sar-det-20-21.png"></div>
 
-*Proportion of changed pixels in a small aoi around the main dock in Salty Lake City for a 19-image time sequence. There were about 360000 pixels in all in the aoi. Note the (approximate) alternation of arrivals (positive definite changes) and departures (negative definite changes).*
+*Proportion of changed pixels in a small region in Salty Lake City for a 19-image time sequence. There were about 360000 pixels in the aoi. Note the (approximate) alternation of arrivals (positive definite changes) and departures (negative definite changes).*
 
-😣analyse later....
+😣Analyze later....
 
 ---
 
 ## Output Images
-*sorting...on the way...*😥
+*on the way...*😥
 
 ## TO DO
 - [x] classification result accuracy evaluation
