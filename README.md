@@ -77,17 +77,18 @@
 
 ***Congratulations!㊗️ As now you have got the original data!🎆***
 
-*If you want to do some preprocess to original images then using LT(written as IDL) in local environment and have run official code, just see **[step2](#step-2-fit-change-curveoptional)**. But LLR may don't work in some region you are interested if you follow LT official tutorial or it's not need for you to obtain images before 1986, so we modify source code to help you achieve this and get change map, you can get it [here](./01LLR_LT_GEE/lt_without_mss.js).*
+*If you want to do some preprocess to original data(means that you have obtained original images after running the official code), then using LT(written as IDL) in local environment, just see **[step2](#step-2-fit-change-curveoptional)**. But LLR may don't work in some region you are interested if you follow LT official tutorial, if it's not need for you to obtain images before 1986, we modify source code to help you achieve this and get change map, you can get it [here](./01LLR_LT_GEE/lt_without_mss.js).*
 
 *Or you want to get fitted data by LT-processed directly in GEE, you can follow this [code](./01LLR_LT_GEE/landsatlinkr_fitted.js) and **skip step2 and go to [step3](#step-3-time-series-clustering)** after you have completed this step. Now you can get fitted data follow this code after you have stored asset `LandTrendr` in your gee account.*
 
+*Here is a demo shows that how to export fitted data and change map after you have obtained `LandTrendr` asset in your gee account:*
+
 	var lt = ee.Image('projects/your_account_name/assets/LandsatLinkr/041032/landtrendr');
-	// 50 Years! 
 	var start_yr = 1972;
 	var end_yr = 2022;
 	var years = []; // make an empty array to hold year band names
 	for (var i = start_yr; i <= end_yr; ++i) years.push('yr'+i.toString()); // fill the array with years from the startYear to the endYear and convert them to string
-	var ltr =  lt.select('ndvi_fit'); // just select bands as you want
+	var ltr =  lt.select('ndvi_fit'); // just select fitted bands as you want
 	var ndvi_ftv_Stack = ltr.arrayFlatten([years]);// flatten this out into bands, assigning the year as the band name
 	Export.image.toDrive({
 	  image:ndvi_ftv_Stack,
@@ -111,7 +112,7 @@
 ---
 
 ## 😇STEP 2: Fit Change Curve(optional)
-- **use [IDL code](./02LT-IDL) to execute [`LandTrendr`](https://github.com/jdbcode/LLR-LandTrendr)**[^1]
+- **use [IDL code](./02LT_IDL) to execute [`LandTrendr`](https://github.com/jdbcode/LLR-LandTrendr)**[^1]
   
   - *we develop a GUI to help users to use it.*
   <p align="center">
@@ -152,7 +153,7 @@
     </p>
   
   Congratulations! As now you have got the processed data after LT algorithm!🤞
-  If you want to know more infomation about LandTrendr algorithm, we recommend you follow this [`link`](https://emapr.github.io/LT-GEE/index.html)🥳
+  If you want to know more infomation about `LandTrendr` algorithm, we recommend you follow this [`link`](https://emapr.github.io/LT-GEE/index.html)🥳
   
   
 
@@ -559,6 +560,10 @@ LT will output *`yod`change map* which means the years of disturbance. for our s
 
 use **ENVI** calculate image static, find study region got disturbed mainly in 2012:
 <div align='center'><img width='500' height='500' src="./asset/25.png"></div>
+
+or use python [code](./05sar-detection.ipynb) to calculate most frequent year of disturbance, we can get this:
+
+<div align='center'><img width='500' src="./asset/frequence_of_years.png"></div>
 
 we use images captured by *Sentinel-1 A&B* satellites, but consider that *Sentinel* was launched in 2014, so we choose another disturbance year, 2020~2021, both *A&B* satellites, ascending pass(fake true color with cmap/smap/fmap)
 
