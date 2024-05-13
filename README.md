@@ -31,7 +31,7 @@
   Click me to get it!⚓ [![Click here to use it](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/gee-community/ee-LandsatLinkr/blob/main/colab_template.ipynb)
 
 - ### Option 2: Collect data in `Google Earth Engine`🌏
-  *Follow these steps to complete your data collection, follow this [code](./LLR-LT-GEE/landsatlinkr01.js) according to LLR official tutorial. **You can get all years RS images processed by `LandTrendr` in this code.***
+  *Follow these steps to complete your data collection, follow this [code](./01LLR_LT_GEE/landsatlinkr_official.js) according to LLR official tutorial. **You can get all years RS images processed by `LandTrendr` in this code.***
 
   - View WRS-1 granules - figure out what WRS-1 granule to process
   - Make a processing [***dir***](https://gist.github.com/jdbcode/36f5a04329d5d85c43c0408176c51e6)
@@ -44,7 +44,7 @@
   - Run LandTrendr and display the fitted collection on the map
   - Display the year and magnitude of the greatest disturbance during the time series
   
-  ***If you don't need original data, all you want is just fitted data, follow this [code](./LLR-LT-GEE/landsatlinkr02.js) (RECOMMENDED)***
+  ***If you don't need original data, all you want is just fitted data, follow this [code](./01LLR_LT_GEE/landsatlinkr_fitted.js) (RECOMMENDED)***
 
 *the tutorial is detailed enough, you will get study area data named `LandTrendr` you needed if you follow it step by step in `asset` file folder within your GEE account. you need to storage data in `Google Drive` before you download it to local(because gee doesn't support you download to local directly). you can follow this code to check data and download it to Drive:*
 		
@@ -77,9 +77,9 @@
 
 ***Congratulations!㊗️ As now you have got the original data!🎆***
 
-*If you want to do some preprocess to original images then using LT(written as IDL) in local environment and have run official code, just see **[step2](#step-2-fit-change-curveoptional)**. But LLR may don't work in some region you are interested if you follow LT official tutorial or it's not need for you to obtain images before 1986, so we modify source code to help you achieve this and get change map, you can get it [here](./LLR-LT-GEE/lt_without_mss.js).*
+*If you want to do some preprocess to original images then using LT(written as IDL) in local environment and have run official code, just see **[step2](#step-2-fit-change-curveoptional)**. But LLR may don't work in some region you are interested if you follow LT official tutorial or it's not need for you to obtain images before 1986, so we modify source code to help you achieve this and get change map, you can get it [here](./01LLR_LT_GEE/lt_without_mss.js).*
 
-*Or you want to get fitted data by LT-processed directly in GEE, you can follow this [code](./LLR-LT-GEE/landsatlinkr02.js) and **skip step2 and go to [step3](#step-3-time-series-clustering)** after you have completed this step. Now you can get fitted data follow this code after you have stored asset `LandTrendr` in your gee account.*
+*Or you want to get fitted data by LT-processed directly in GEE, you can follow this [code](./01LLR_LT_GEE/landsatlinkr_fitted.js) and **skip step2 and go to [step3](#step-3-time-series-clustering)** after you have completed this step. Now you can get fitted data follow this code after you have stored asset `LandTrendr` in your gee account.*
 
 	var lt = ee.Image('projects/your_account_name/assets/LandsatLinkr/041032/landtrendr');
 	// 50 Years! 
@@ -111,7 +111,7 @@
 ---
 
 ## 😇STEP 2: Fit Change Curve(optional)
-- **use [IDL code](./LT-IDL) to execute [`LandTrendr`](https://github.com/jdbcode/LLR-LandTrendr)**[^1]
+- **use [IDL code](./02LT-IDL) to execute [`LandTrendr`](https://github.com/jdbcode/LLR-LandTrendr)**[^1]
   
   - *we develop a GUI to help users to use it.*
   <p align="center">
@@ -329,12 +329,11 @@ it is an indicator that measures the tightness and separation of clustering resu
 - Negative value: indicates that the samples are poorly clustered, and the distance within clusters is farther than the distance between clusters.
 - Close to 0: It means that the distance between samples within and between clusters is similar, and the clustering result is unclear.
 
-
-*here is e.g. of how to use silhouette_score calculation function `silhouette_score(cdist_dtw(X),y_pred,metric="precomputed")`, so you need to figure out what is `cdist_dtw(X)`❔. Actually realname of it, is measuring distance of time series, different from `Euclidean`, `dtw` and `softdtw`. so here is definition of SBD which is foundation of kshape.*
-
-$SBD(\vec{x},\vec{y})=1-\max_{w}\left(\frac{CC_w(\vec{x},\vec{y})}{\sqrt{R_0(\vec{x},\vec{x})\cdot R_0(\vec{y},\vec{y})}}\right)$
-
-so we add the `_get_norms` function, which is responsible for calculating the modulus length, and the `_my_cross_dist` function, which returns the distance matrix of the temporal collection X, i.e., the matrix formed by the distance between each element ti in X.
+*here is e.g. of how to use silhouette_score calculation function `silhouette_score(cdist_dtw(X),y_pred,metric="precomputed")`, so you need to figure out what is `cdist_dtw(X)`❔. Actually the real name of it, is measuring distance of time series, different from `Euclidean`, `dtw` and `softdtw`. so here is definition of SBD which is foundation of kshape.*
+$$
+SBD(\vec{x},\vec{y})=1-\max_{w}\left(\frac{CC_w(\vec{x},\vec{y})}{\sqrt{R_0(\vec{x},\vec{x})\cdot R_0(\vec{y},\vec{y})}}\right)
+$$
+so we add the `_get_norms` function, which is responsible for calculating the modulus length, and the `_my_cross_dist` function, which returns the distance matrix of the temporal collection X, i.e., the matrix formed by the distance between each element in X.
 
 	def _get_norms(self,X):
 	    norms = []
@@ -413,16 +412,25 @@ so we add the `_get_norms` function, which is responsible for calculating the mo
   ---
   
 - ### *Training Model*
-  see code we upload in repo. test it in validation dataset
+  see [code](./04Time_Series_Classification_with_tst_and_transformer.ipynb) we upload in repo., test it in validation dataset
   <p align="center"><img src="./asset/24.png">
   </p>
   
+  *you can also draw picture to check predicted probability per true class and confusion matrix after training, like this(e.g. InceptionTime model):*
+  
+    <p align="center">
+  <img width='300' height='300' src="./asset/18.png">
+  <img width='300' height='300' src="./asset/19.png">
+  </p>
+  
+  
 - ### *Classification Result*
+  
   ***here are the classification result after training based on dataset we generated above.***
-
+  
   <p align="center"><img src="./asset/17.png">
   </p>
-
+  
   <p align='center'>model info</p>
 
 <div align=center>
@@ -438,11 +446,6 @@ so we add the `_get_norms` function, which is responsible for calculating the mo
 
 </div>
 
-*you can also draw picture to check predicted probal per ture class and confusion matrix after training, like this:*
-  <p align="center">
-<img width='300' height='300' src="./asset/18.png">
-<img width='300' height='300' src="./asset/19.png">
-</p>
 
 ---
 
@@ -578,7 +581,7 @@ For a time series of  k  images, the exported change map consists of  k+2  bands
 ---
 
 ## Output Images
-*on the way...*😥
+*on the way...😥*
 
 ## TO DO
 - [x] classification result accuracy evaluation
