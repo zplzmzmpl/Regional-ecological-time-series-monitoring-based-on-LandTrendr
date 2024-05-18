@@ -332,7 +332,7 @@ it is an indicator that measures the tightness and separation of clustering resu
 
 *here is e.g. of how to use silhouette_score calculation function `silhouette_score(cdist_dtw(X),y_pred,metric="precomputed")`, so you need to figure out what is `cdist_dtw(X)`❔. Actually the real name of it, is measuring distance of time series, different from `Euclidean`, `dtw` and `softdtw`. so here is definition of SBD which is foundation of kshape.*
 $$
-SBD(\vec{x},\vec{y})=1-\max_{w}\left(\frac{CC_w(\vec{x},\vec{y})}{\sqrt{R_0(\vec{x},\vec{x})\cdot R_0(\vec{y},\vec{y})}}\right)
+$SBD(\vec{x},\vec{y})=1-\max_{w}\left(\frac{CC_w(\vec{x},\vec{y})}{\sqrt{R_0(\vec{x},\vec{x})\cdot R_0(\vec{y},\vec{y})}}\right)$
 $$
 so we add the `_get_norms` function, which is responsible for calculating the modulus length, and the `_my_cross_dist` function, which returns the distance matrix of the temporal collection X, i.e., the matrix formed by the distance between each element in X.
 
@@ -402,12 +402,12 @@ so we add the `_get_norms` function, which is responsible for calculating the mo
   
   
   
-  |                      downward                      |                     downward then upward                     |
+  |                    Disturbance                     |                     Disturbance-Recovery                     |
   | :------------------------------------------------: | :----------------------------------------------------------: |
   |  <img src="./asset/down.png" style="zoom:70%;" />  |   <img src="./asset/down_then_up.png" style="zoom:70%;" />   |
-  |                     **upward**                     |                   **upward then downward**                   |
+  |                    **Recovery**                    |                   **Recovery-Disturbance**                   |
   |   <img src="./asset/up.png" style="zoom:70%;" />   |   <img src="./asset/up_then_down.png" style="zoom:70%;" />   |
-  |                     **stable**                     |                    **multi disturbance**                     |
+  |                     **Stable**                     |                    **Multi-Disturbance**                     |
   | <img src="./asset/stable.png" style="zoom:70%;" /> | <img src="./asset/multi_disturbance.png" style="zoom:70%;" /> |
   
   ---
@@ -556,20 +556,17 @@ so we add the `_get_norms` function, which is responsible for calculating the mo
 ## 📡STEP 5: SAR Detection
 
 LT will output *`yod`change map* which means the years of disturbance. for our study region, it would be like this:
-<div align='center'><img width='600' height='600' src="./asset/20.png"></div>
+<div align='center'><img width='600' src="./asset/20.png"></div>
 
-use **ENVI** calculate image static, find study region got disturbed mainly in 2012:
-<div align='center'><img width='500' height='500' src="./asset/25.png"></div>
-
-or use python [code](./05sar-detection.ipynb) to calculate most frequent year of disturbance, we can get this:
+use python [code](./05sar-detection.ipynb)  we provided to calculate most frequent year of disturbance, we can get this:
 
 <div align='center'><img width='500' src="./asset/frequence_of_years.png"></div>
 
-we use images captured by *Sentinel-1 A&B* satellites, but consider that *Sentinel* was launched in 2014, so we choose another disturbance year, 2020~2021, both *A&B* satellites, ascending pass(fake true color with cmap/smap/fmap)
+we use images captured by *Sentinel-1 A&B* satellites, but consider that *Sentinel* was launched in 2014, so we choose another disturbance year, 2019/04/02~2020/10/19, both *A&B* satellites, ascending pass(fake color combination with band cmap, smap and fmap)
 
-<div align='center'><img width='600' src="./asset/27.jpg"></div>
+<div align='center'><img width='600' src="./asset/27.png"></div>
 
-For a time series of  k  images, the exported change map consists of  k+2  bands, we gather 19 images, namely 21 bands.
+For a time series of  k  images, the exported change map consists of  k+2  bands, we gather 49 images, namely 51 bands.
 <div align='center'><img width='600' src="./asset/28.png"></div>
 
 - cmap: the interval of the most recent change, one band, byte values  ∈[0,k−1] , where 0 = no change.
@@ -577,21 +574,45 @@ For a time series of  k  images, the exported change map consists of  k+2  bands
 - fmap: the number of changes, one band, byte values  ∈[0,k−1] , where 0 = no changes.
 - bmap: the changes in each interval,   k−1  bands, byte values  ∈[0,3] , where 0 = no change, 1 = positive definite change, 2 = negative definite change, 3 = indefinite change.
 
-<div align='center'><img width='600' src="./asset/slc-sar-det-20-21.png"></div>
+<div align='center'><img width='600' src="./asset/slc-sar-det-19-20.png"></div>
 
-*Proportion of changed pixels in a small region in Salty Lake City for a 19-image time sequence. There were about 360000 pixels in the aoi. Note the (approximate) alternation of arrivals (positive definite changes) and departures (negative definite changes).*
+*Proportion of changed pixels in a small region in Salty Lake City for a 49-image time sequence. There were about 360000 pixels in the aoi. Note the (approximate) alternation of arrivals (positive definite changes) and departures (negative definite changes).*
 
 😣Analyze later....
 
 ---
 
 ## Output Images
-*on the way...😥*
+<div align='center'><img src="./asset/univariates_kshape_4_map.png"></div>
+
+<div align='center'><img src="./asset/multivariates_kshape_5_map.png"></div>
+
+<div align='center'><img src="./asset/InceptionTime_map.png"></div>
+
+<div align='center'><img src="./asset/TST_map.png"></div>
+
+<div align='center'><img src="./asset/yod.png"></div>
+
+<div align='center'><img src="./asset/magnitude.png"></div>
+
+<div align='center'><img src="./asset/duration.png"></div>
+
+<div align='center'><img src="./asset/preval.png"></div>
+
+<div align='center'><img src="./asset/dsnr.png"></div>
+
+<div align='center'><img src="./asset/cmap.png"></div>
+
+
+
+<div align='center'><img src="./asset/smap.png"></div>
+
+<div align='center'><img src="./asset/fmap.png"></div>
 
 ## TO DO
 - [x] classification result accuracy evaluation
 - [x] add more reliable class to classify dataset
-- [ ] remote sensing mapping
+- [x] remote sensing mapping
 - [x] D-InSAR detect surface deformation rely on change map(year of disturbance)
 
 
