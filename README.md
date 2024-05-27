@@ -551,8 +551,6 @@ so we add the `_get_norms` function, which is responsible for calculating the mo
 		test_probas, test_targets, test_decoded = learn.get_preds(dl=test_dl, with_decoded=True, save_preds=None)
 		test_decoded]
 
-❌**failed becourse of RAM run out**
-
 ## 📡STEP 5: SAR Detection
 
 LT will output *`yod`change map* which means the years of disturbance. for our study region, it would be like this:
@@ -591,7 +589,7 @@ For a time series of  k  images, the exported change map consists of  k+2  bands
 
 <div align='center'><img src="./asset/TST_map.png"></div>
 
-<div align='center'><img src="./asset/yod.png"></div>
+<div align='center'><img src="./asset/xresnet34.png"></div>
 
 <div align='center'><img src="./asset/magnitude.png"></div>
 
@@ -613,7 +611,8 @@ For a time series of  k  images, the exported change map consists of  k+2  bands
 - [x] classification result accuracy evaluation
 - [x] add more reliable class to classify dataset
 - [x] remote sensing mapping
-- [x] D-InSAR detect surface deformation rely on change map(year of disturbance)
+- [x] sar change detection
+- [ ] D-InSAR detect surface deformation
 
 
 [^1]:Kennedy, Robert E., Yang, Zhiqiang, & Cohen, Warren B. (2010). Detecting trends in forest disturbance and recovery using yearly Landsat time series: 1. LandTrendr - Temporal segmentation algorithms. Remote Sensing of Environment, 114, 2897-2910
