@@ -168,6 +168,7 @@ you can **skip** *[step2](#step-2-fit-change-curveoptional)* and go to ***[step3
   ### *Usage in python*
   
   **There are two ways to use KShape by `python`**
+  
 - KShape integrated in tslearn(only CPU engage in calulation)
   there is a simple example:
   
@@ -184,20 +185,24 @@ you can **skip** *[step2](#step-2-fit-change-curveoptional)* and go to ***[step3
 - Independent KShape lib(you can call GPU to accelerate calculation efficiency)
    there is a simple example:
 
-	`from kshape import KShapeClusteringGPU
-	   def kshape_gpu(X,k):
-	     print('begin kshape gpu...\n')
-	     ksg = KShapeClusteringGPU(n_clusters=k)
-	     ksg.fit(np.expand_dims(X, axis=2))
-	     print('\nend kshape gpu...')
-	     return ksg`
+	```
+	from kshape import KShapeClusteringGPU
+	def kshape_gpu(X,k):
+	 	print('begin kshape gpu...\n')
+	 	ksg = KShapeClusteringGPU(n_clusters=k)
+	 	ksg.fit(np.expand_dims(X, axis=2))
+	 	print('\nend kshape gpu...')
+   	return ksg
+   ```
+
+   
 
    ---
 
-   ### *Elbow Law*
-
-   before we run KShape code, we need to define fixed number of clustering, for this we use **Elbow Law** to check probable number of clustering.
-
+	### *Elbow Law*
+	
+	before we run KShape code, we need to define fixed number of clustering, for this we use **Elbow Law** to check probable number of clustering.
+	
 	    distortions = []
 	    for i in range(4, 8):
 	       print('cluster num:', i, '\n-------------')
@@ -205,18 +210,18 @@ you can **skip** *[step2](#step-2-fit-change-curveoptional)* and go to ***[step3
 	       # Perform clustering calculation
 	       ks.fit(X)
 	       distortions.append(ks.inertia_)
-	    plt.plot(range(2, 7), distortions, marker='o')
-	    plt.xlabel('Number of clusters')
-	    plt.ylabel('Distortion')
-	    plt.show()
+      plt.plot(range(2, 7), distortions, marker='o')
+      plt.xlabel('Number of clusters')
+      plt.ylabel('Distortion')
+      plt.show()
   
   code above will return a plot like this, you can see *slop* become more gentle when value of *x* equal *5*, so we confirm number of clustering is *5*, but you'd better to draw the centriod to check correct categories, we finally choose 4 categories after drawing centriods of 4 and 5 categories condition.
-  
-  <p align="center">
-    <img width='500' height='400' src="./asset/08.png">
-  </p>
 
-  but sometimes it is doesn't obvious just by this way, so we suggest use `yellowbrick` lib to visualize k-elow-law:
+  <p align="center">
+	  <img width='500' height='400' src="./asset/08.png">
+	</p>
+	
+	but sometimes it is doesn't obvious just by this way, so we suggest use `yellowbrick` lib to visualize k-elow-law:
 	
 	 	from yellowbrick.cluster import KElbowVisualizer	
 	 	#Instantiate the clustering model and visualizer
@@ -226,10 +231,10 @@ you can **skip** *[step2](#step-2-fit-change-curveoptional)* and go to ***[step3
 	 	#silhouette: mean ratio of intra-cluster and nearest-cluster distance
 	 	#calinski_harabasz: ratio of within to between cluster dispersion
 	 	
-	 	visualizer = KElbowVisualizer(model, k=(4,10),metric='distortion')
-	 	
-	 	visualizer.fit(img_data)        # Fit the data to the visualizer
-	 	visualizer.show()        # Finalize and render the figure
+   	visualizer = KElbowVisualizer(model, k=(4,10),metric='distortion')
+   	
+   	visualizer.fit(img_data)        # Fit the data to the visualizer
+   	visualizer.show()        # Finalize and render the figure
   
   here are visualizations of `elbow law` using three evaluation indexs with `yellowbrick` lib.
 
@@ -244,19 +249,21 @@ now we can apply KShape to image data we got above with 51 bands, you can just c
   **First of all, read data and convert to fomat of time series.**
   - for univariate data clustering, like ndvi ts data `[length(number of ts), time_span(51 for this), variate(1 for this)]`
 
-	      import rasterio
-	    #Load the .tif image
-	    with rasterio.open("./NDVI51years.tif") as src:
-	          image_data = src.read()
-	          row = image_data.shape[1]
-	          column = image_data.shape[2]
-	          # Reshape to (rows, columns, bands)
-	          transposed_image_data = np.transpose(image_data, (1, 2, 0))
-	    print('transposed shape:', transposed_image_data.shape)
-	    
-	    #Reshape the image data to (rows * columns, bands)
-	    img_data = transposed_image_data.reshape(-1,transposed_image_data.shape[2])
-	    print('reshaped shape:', img_data.shape)
+	    ```
+	import rasterio
+	#Load the .tif image
+	with rasterio.open("./NDVI51years.tif") as src:
+	      image_data = src.read()
+	      row = image_data.shape[1]
+	      column = image_data.shape[2]
+	      #Reshape to (rows, columns, bands)
+	      transposed_image_data = np.transpose(image_data, (1, 2, 0))
+	print('transposed shape:', transposed_image_data.shape)
+	img_data = transposed_image_data.reshape(-1,transposed_image_data.shape[2])
+	print('reshaped shape:', img_data.shape)
+	```
+	
+	​    
 	
   - for multivariate data clustering,like `[ndvi, tcg, tcw]` ts data `[length(number of ts), time_span(51 for this), variate(3 for this)]`
     
@@ -265,20 +272,20 @@ now we can apply KShape to image data we got above with 51 bands, you can just c
 		
 		#define image paths
 		image_paths = [
-			    './ndvi51years.tif',
-			     ·········
-			    './tcw51years.tif'
-			]
+		        './ndvi51years.tif',
+		         ·········
+		        './tcw51years.tif'
+		    ]
 		#read image data and reshape to 4D array
 		combined_array = []
 		for path in image_paths:
-			with rasterio.open(path) as src:
-		    	array = src.read()
-		    	reshaped_array = array.reshape(array.shape[0], -1)
-		    	combined_array.append(reshaped_array)
-		    	if path == image_paths[0]:
-		      		metadata = src.profile
-		      		print(metadata)
+		    with rasterio.open(path) as src:
+		        array = src.read()
+		        reshaped_array = array.reshape(array.shape[0], -1)
+		        combined_array.append(reshaped_array)
+		        if path == image_paths[0]:
+		            metadata = src.profile
+		            print(metadata)
 		
 		#convert list to array
 		combined_array = np.array(combined_array)
@@ -292,7 +299,7 @@ now we can apply KShape to image data we got above with 51 bands, you can just c
 		
 		#save metadata
 		with rasterio.open('/*/metadata.tif', 'w', **metadata) as dst:
-				dst.update_tags(**metadata)
+		        dst.update_tags(**metadata)
 	**Second, draw centroid of clustering, take a look at how kshape breaks down the data into categories**
   <p align='center'>
     <img width='400' height='300' src="./asset/12.png" hspace='10'>
@@ -324,9 +331,9 @@ it is an indicator that measures the tightness and separation of clustering resu
 - Negative value: indicates that the samples are poorly clustered, and the distance within clusters is farther than the distance between clusters.
 - Close to 0: It means that the distance between samples within and between clusters is similar, and the clustering result is unclear.
 
-*here is e.g. of how to use silhouette_score calculation function `silhouette_score(cdist_dtw(X),y_pred,metric="precomputed")`, so you need to figure out what is `cdist_dtw(X)`❔. Actually the real name of it, is measuring distance of time series, different from `Euclidean`, `dtw` and `softdtw`. so here is definition of SBD which is foundation of kshape: *
+here is e.g. of how to use silhouette_score calculation function `silhouette_score(cdist_dtw(X),y_pred,metric="precomputed")`, so you need to figure out what is `cdist_dtw(X)`❔. Actually the real name of it, is measuring distance of time series, different from `Euclidean`, `dtw` and `softdtw`. so here is definition of SBD which is foundation of kshape: 
 $$
-SBD(\vec{x},\vec{y})=1-\max_{w}\left(\frac{CC_w(\vec{x},\vec{y})}{\sqrt{R_0(\vec{x},\vec{x})\cdot R_0(\vec{y},\vec{y})}}\right)
+$SBD(\vec{x},\vec{y})=1-\max_{w}\left(\frac{CC_w(\vec{x},\vec{y})}{\sqrt{R_0(\vec{x},\vec{x})\cdot R_0(\vec{y},\vec{y})}}\right)$
 $$
 so we add the `_get_norms` function, which is responsible for calculating the modulus length, and the `_my_cross_dist` function, which returns the distance matrix of the temporal collection X, i.e., the matrix formed by the distance between each element in X.
 
@@ -611,7 +618,7 @@ The results of the production activity monitoring are shown in Figure 16, with a
 
 ## End
 
-In this Repo, what I aim to do is to build upon the achievements of previous scholars and further utilize long-time series remote sensing imagery for ecological monitoring. LandTrend can monitor the disturbance conditions in the study area over the years. To make full use of the time series data, the remote sensing time series imagery is transformed into a collection of pixel time series data, and clustering and classification work is conducted based on pixels. The ideal situation for this repository should be that users input the study area of interest, set a series of thresholds (which can also be default), and the program then outputs the detected disturbance conditions, pixel trajectory types, etc., and analyzes them in such a workflow to simplify the user's workload. This project still needs further organization and improvement, and what I have done is just a small part of the work. Many thanks to other opensource workers and repos.
+​	In this Repo, what I aim to do is to build upon the achievements of previous scholars and further utilize long-time series remote sensing imagery for ecological monitoring. LandTrend can monitor the disturbance conditions in the study area over the years. To make full use of the time series data, the remote sensing time series imagery is transformed into a collection of pixel time series data, and clustering and classification work is conducted based on pixels. The ideal situation for this repository should be that users input the study area of interest, set a series of thresholds (which can also be default), and the program then outputs the detected disturbance conditions, pixel trajectory types, etc., and analyzes them in such a workflow to simplify the user's workload. This project still needs further organization and improvement, and what I have done is just a small part of the work. Many thanks to other opensource workers and repos.
 
 
 [^1]:Kennedy, Robert E, Yang, Zhiqiang, & Cohen, Warren B. (2010). Detecting trends in forest disturbance and recovery using yearly Landsat time series: 1. LandTrendr - Temporal segmentation algorithms. Remote Sensing of Environment, 114, 2897-2910
