@@ -195,12 +195,10 @@ you can **skip** *[step2](#step-2-fit-change-curveoptional)* and go to ***[step3
    	return ksg
    ```
 
-   
-
    ---
 
-	### *Elbow Law*
-	
+   ### *Elbow Law*
+
 	before we run KShape code, we need to define fixed number of clustering, for this we use **Elbow Law** to check probable number of clustering.
 	
 	    distortions = []
@@ -210,17 +208,16 @@ you can **skip** *[step2](#step-2-fit-change-curveoptional)* and go to ***[step3
 	       # Perform clustering calculation
 	       ks.fit(X)
 	       distortions.append(ks.inertia_)
-      plt.plot(range(2, 7), distortions, marker='o')
-      plt.xlabel('Number of clusters')
-      plt.ylabel('Distortion')
-      plt.show()
-  
-  code above will return a plot like this, you can see *slop* become more gentle when value of *x* equal *5*, so we confirm number of clustering is *5*, but you'd better to draw the centriod to check correct categories, we finally choose 4 categories after drawing centriods of 4 and 5 categories condition.
-
+	       plt.plot(range(2, 7), distortions, marker='o')
+	       plt.xlabel('Number of clusters')
+          plt.ylabel('Distortion')
+          plt.show()
+   code above will return a plot like this, you can see *slop* become more gentle when value of *x* equal *5*, so we confirm number of clustering is *5*, but you'd better to draw the centriod to check correct categories, we finally choose 4 categories after drawing centriods of 4 and 5 categories condition.
+   
   <p align="center">
-	  <img width='500' height='400' src="./asset/08.png">
-	</p>
-	
+    <img width='500' height='400' src="./asset/08.png">
+  </p>
+  
 	but sometimes it is doesn't obvious just by this way, so we suggest use `yellowbrick` lib to visualize k-elow-law:
 	
 	 	from yellowbrick.cluster import KElbowVisualizer	
@@ -231,9 +228,9 @@ you can **skip** *[step2](#step-2-fit-change-curveoptional)* and go to ***[step3
 	 	#silhouette: mean ratio of intra-cluster and nearest-cluster distance
 	 	#calinski_harabasz: ratio of within to between cluster dispersion
 	 	
-   	visualizer = KElbowVisualizer(model, k=(4,10),metric='distortion')
-   	
-   	visualizer.fit(img_data)        # Fit the data to the visualizer
+	 	visualizer = KElbowVisualizer(model, k=(4,10),metric='distortion')
+	 	
+	 	visualizer.fit(img_data)        # Fit the data to the visualizer
    	visualizer.show()        # Finalize and render the figure
   
   here are visualizations of `elbow law` using three evaluation indexs with `yellowbrick` lib.
@@ -261,9 +258,7 @@ now we can apply KShape to image data we got above with 51 bands, you can just c
 	print('transposed shape:', transposed_image_data.shape)
 	img_data = transposed_image_data.reshape(-1,transposed_image_data.shape[2])
 	print('reshaped shape:', img_data.shape)
-	```
-	
-	​    
+	  ```
 	
   - for multivariate data clustering,like `[ndvi, tcg, tcw]` ts data `[length(number of ts), time_span(51 for this), variate(3 for this)]`
     
@@ -305,9 +300,10 @@ now we can apply KShape to image data we got above with 51 bands, you can just c
     <img width='400' height='300' src="./asset/12.png" hspace='10'>
     <img width='400' height='300' src="./asset/13.png" hsapce='10'>
   </p>
-  <p align='center'>4 categories univariate in the left and 5 categories mulitvariate in the right</p>
+  <p align='center'>4 classes for univariate clustering(left) and 5 classes mulitvariate clustering(right)</p>
 
 **Finally, check the result after kshape clustering(univariate for left and multivariate for right)🥳**
+
   <p align='center'>
     <img width='300' height='300' src="./asset/14.png" hspace='10'>
     <img width='300' height='300' src="./asset/15.png" hsapce='10'>
