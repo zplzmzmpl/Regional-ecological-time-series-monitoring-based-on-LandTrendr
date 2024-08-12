@@ -44,7 +44,6 @@
   - Run LandTrendr and display the fitted collection on the map
   - Display the year and magnitude of the greatest disturbance during the time series
   
-  ***If you don't need original data, all you want is just fitted data, follow this [code](./01LLR_LT_GEE/landsatlinkr_fitted.js) (RECOMMENDED)***
 
 *the tutorial is detailed enough, you will get study area data named `LandTrendr` you needed if you follow it step by step in `asset` file folder within your GEE account. you need to storage data in `Google Drive` before you download it to local(because gee doesn't support you download to local directly). you can follow this code to check data and download it to Drive:*
 		
@@ -75,11 +74,11 @@
 </p>
 
 
-***Congratulations!㊗️ As now you have got the original data!🎆***
+If you want to do some preprocess to original data(means that you have obtained original images after running the official code), then using LT(written as IDL) in local environment, just see *[step2](#step-2-fit-change-curveoptional)*. But LLR may don't work in some region you are interested if you follow LT official tutorial, if it's not need for you to obtain images before 1986, we modify source code to help you achieve this and get change map, you can get it [here](./01LLR_LT_GEE/lt_without_mss.js).
 
-*If you want to do some preprocess to original data(means that you have obtained original images after running the official code), then using LT(written as IDL) in local environment, just see **[step2](#step-2-fit-change-curveoptional)**. But LLR may don't work in some region you are interested if you follow LT official tutorial, if it's not need for you to obtain images before 1986, we modify source code to help you achieve this and get change map, you can get it [here](./01LLR_LT_GEE/lt_without_mss.js).*
+***If you don't need original data, all you want is just fitted data, follow this [code](./01LLR_LT_GEE/landsatlinkr_fitted.js) (RECOMMENDED)***
 
-*Or you want to get fitted data by LT-processed directly in GEE, you can follow this [code](./01LLR_LT_GEE/landsatlinkr_fitted.js) and **skip step2 and go to [step3](#step-3-time-series-clustering)** after you have completed this step. Now you can get fitted data follow this code after you have stored asset `LandTrendr` in your gee account.*
+you can **skip** *[step2](#step-2-fit-change-curveoptional)* and go to ***[step3](#step-3-time-series-clustering)*** after you have completed this step. Now you can get fitted data follow this code after you have stored asset `LandTrendr` in your gee account.
 
 *Here is a demo shows that how to export fitted data and change map after you have obtained `LandTrendr` asset in your gee account:*
 
@@ -162,11 +161,8 @@
   
   ### *Intro KShape*
   
-  The KShape clustering method is a clustering algorithm based on time series data. It groups time series into different clusters by calculating the similarity between them. The key to the KShape clustering method is to match the shape of the time series, not just the numerical value. This enables KShape to discover time series that have similar shapes but not necessarily similar values. The KShape clustering method has wide applications in data analysis in various fields, including finance, medical and weather prediction.The basic steps of the KShape clustering method include:
-  - Select the time series data set to cluster.
-  - Calculate the similarity between time series, usually using methods such as dynamic time warping (DTW).
-  - Clustering based on similarity, commonly used methods include k-means algorithm.
-  - Analyze the clustering results and perform further interpretation and application as needed.
+  In this case, the focus is on the shape matching of time series data, rather than mere numerical matching. This requirement renders traditional numerical clustering algorithms, such as KMeans and KNN, inapplicable. To address this, we introduce the KShape algorithm, which is dedicated to identifying time series with similar shapes. Its principle is similar to KMeans, but significant improvements have been made to the distance measurement and centroid calculation methods, enabling effective shape clustering of time series. Additionally, it can cluster multi-feature time series data, which is of great significance for comprehensively analyzing trajectory change trends. This example performs clustering on both one-dimensional (NDVI) and three-dimensional (NDVI, TCG, TCW) time series data.
+  
   ---
   
   ### *Usage in python*
@@ -175,26 +171,26 @@
 - KShape integrated in tslearn(only CPU engage in calulation)
   there is a simple example:
   
-  	  from tslearn.clustering import KShape
-	  def kshape_cpu(X, k):
-	    print('begin kshape....\n')
-	    seed = 0
-	    ksc = KShape(n_clusters=k, n_init=5, verbose=True, random_state=seed)
-	    ksc.fit(X)
-	    print('\nend kshape\n')
-	    return ksc
+  	from tslearn.clustering import KShape
+		def kshape_cpu(X, k):
+			print('begin kshape....\n')
+			seed = 0
+			ksc = KShape(n_clusters=k, n_init=5, verbose=True, random_state=seed)
+			ksc.fit(X)
+			print('\nend kshape\n')
+			return ksc
 
 
 - Independent KShape lib(you can call GPU to accelerate calculation efficiency)
    there is a simple example:
 
-	   from kshape import KShapeClusteringGPU
+	`from kshape import KShapeClusteringGPU
 	   def kshape_gpu(X,k):
 	     print('begin kshape gpu...\n')
 	     ksg = KShapeClusteringGPU(n_clusters=k)
 	     ksg.fit(np.expand_dims(X, axis=2))
 	     print('\nend kshape gpu...')
-	     return ksg
+	     return ksg`
 
    ---
 
@@ -202,17 +198,17 @@
 
    before we run KShape code, we need to define fixed number of clustering, for this we use **Elbow Law** to check probable number of clustering.
 
-	       distortions = []
-	       for i in range(4, 8):
-	           print('cluster num:', i, '\n-------------')
-	           ks = KShape(n_clusters=i, n_init=5, verbose=True, random_state=0)
-	           # Perform clustering calculation
-	           ks.fit(X)
-	           distortions.append(ks.inertia_)
-	        plt.plot(range(2, 7), distortions, marker='o')
-	        plt.xlabel('Number of clusters')
-	        plt.ylabel('Distortion')
-	        plt.show()
+	    distortions = []
+	    for i in range(4, 8):
+	       print('cluster num:', i, '\n-------------')
+	       ks = KShape(n_clusters=i, n_init=5, verbose=True, random_state=0)
+	       # Perform clustering calculation
+	       ks.fit(X)
+	       distortions.append(ks.inertia_)
+	    plt.plot(range(2, 7), distortions, marker='o')
+	    plt.xlabel('Number of clusters')
+	    plt.ylabel('Distortion')
+	    plt.show()
   
   code above will return a plot like this, you can see *slop* become more gentle when value of *x* equal *5*, so we confirm number of clustering is *5*, but you'd better to draw the centriod to check correct categories, we finally choose 4 categories after drawing centriods of 4 and 5 categories condition.
   
@@ -243,32 +239,30 @@
 <img width='400' height='300' src="./asset/11.png">
 </p>
 
-  now we can apply KShape to image data we got above with 51 bands, you can just cluster ***Univariate*** data, also you can cluster ***Multivariate*** data.
+now we can apply KShape to image data we got above with 51 bands, you can just cluster ***Univariate*** data, also you can cluster ***Multivariate*** data.
 
   **First of all, read data and convert to fomat of time series.**
   - for univariate data clustering, like ndvi ts data `[length(number of ts), time_span(51 for this), variate(1 for this)]`
 
-	    import rasterio
+	      import rasterio
 	    #Load the .tif image
 	    with rasterio.open("./NDVI51years.tif") as src:
-	        image_data = src.read()
-	        row = image_data.shape[1]
-	        column = image_data.shape[2]
-	        # Reshape to (rows, columns, bands)
-	        transposed_image_data = np.transpose(image_data, (1, 2, 0))
-	
+	          image_data = src.read()
+	          row = image_data.shape[1]
+	          column = image_data.shape[2]
+	          # Reshape to (rows, columns, bands)
+	          transposed_image_data = np.transpose(image_data, (1, 2, 0))
 	    print('transposed shape:', transposed_image_data.shape)
 	    
 	    #Reshape the image data to (rows * columns, bands)
 	    img_data = transposed_image_data.reshape(-1,transposed_image_data.shape[2])
 	    print('reshaped shape:', img_data.shape)
-
+	
   - for multivariate data clustering,like `[ndvi, tcg, tcw]` ts data `[length(number of ts), time_span(51 for this), variate(3 for this)]`
     
-		import rasterio
+		i	import rasterio
 		import numpy as np
-		from rasterio.transform import Affine
-	
+		
 		#define image paths
 		image_paths = [
 			    './ndvi51years.tif',
@@ -299,7 +293,7 @@
 		#save metadata
 		with rasterio.open('/*/metadata.tif', 'w', **metadata) as dst:
 				dst.update_tags(**metadata)
-    **Second, draw centroid of clustering, take a look at how kshape breaks down the data into categories**
+	**Second, draw centroid of clustering, take a look at how kshape breaks down the data into categories**
   <p align='center'>
     <img width='400' height='300' src="./asset/12.png" hspace='10'>
     <img width='400' height='300' src="./asset/13.png" hsapce='10'>
@@ -317,7 +311,7 @@
 > These steps will cost lots of time, keep patient🛏️.
 ---
 
-### *Evaluation*
+### *Accuracy Evaluation*
 
 **but now😕, another question is how to evaluate accuracy of kshape clustering❓**
 
@@ -330,9 +324,9 @@ it is an indicator that measures the tightness and separation of clustering resu
 - Negative value: indicates that the samples are poorly clustered, and the distance within clusters is farther than the distance between clusters.
 - Close to 0: It means that the distance between samples within and between clusters is similar, and the clustering result is unclear.
 
-*here is e.g. of how to use silhouette_score calculation function `silhouette_score(cdist_dtw(X),y_pred,metric="precomputed")`, so you need to figure out what is `cdist_dtw(X)`❔. Actually the real name of it, is measuring distance of time series, different from `Euclidean`, `dtw` and `softdtw`. so here is definition of SBD which is foundation of kshape.*
+*here is e.g. of how to use silhouette_score calculation function `silhouette_score(cdist_dtw(X),y_pred,metric="precomputed")`, so you need to figure out what is `cdist_dtw(X)`❔. Actually the real name of it, is measuring distance of time series, different from `Euclidean`, `dtw` and `softdtw`. so here is definition of SBD which is foundation of kshape: *
 $$
-$SBD(\vec{x},\vec{y})=1-\max_{w}\left(\frac{CC_w(\vec{x},\vec{y})}{\sqrt{R_0(\vec{x},\vec{x})\cdot R_0(\vec{y},\vec{y})}}\right)$
+SBD(\vec{x},\vec{y})=1-\max_{w}\left(\frac{CC_w(\vec{x},\vec{y})}{\sqrt{R_0(\vec{x},\vec{x})\cdot R_0(\vec{y},\vec{y})}}\right)
 $$
 so we add the `_get_norms` function, which is responsible for calculating the modulus length, and the `_my_cross_dist` function, which returns the distance matrix of the temporal collection X, i.e., the matrix formed by the distance between each element in X.
 
@@ -431,8 +425,6 @@ so we add the `_get_norms` function, which is responsible for calculating the mo
   
   <p align="center"><img src="./asset/17.png">
   </p>
-  
-  <p align='center'>model info</p>
 
 <div align=center>
 
@@ -441,6 +433,7 @@ so we add the `_get_norms` function, which is responsible for calculating the mo
 | InceptionTime    | 0.939286          | 0.9393              | 0.173723      | 0.157058       | 82%     	|
 | Tansformer       | 0.941667          | 0.9542              | 0.571105      | 0.612427       | 80%		|
 | MiniRocket       | 0.939286          | N/A                 | 0.176533      | 0.186470       | 72%		|
+| xresnet34 | 0.992758 | 0.9847 | 0.043576 | 0.021456 | 67%	|
 | CNN Classifier   | 0.921428          | N/A                 | N/A           | N/A            | 63%		|
 | TimeSeriesForest | 0.939285          | N/A                 | N/A           | N/A            | 60%		|
 | BOSSVS           | 0.792857          | N/A                 | N/A           | N/A            | 53%		|
@@ -572,11 +565,11 @@ For a time series of  k  images, the exported change map consists of  k+2  bands
 - fmap: the number of changes, one band, byte values  ∈[0,k−1] , where 0 = no changes.
 - bmap: the changes in each interval,   k−1  bands, byte values  ∈[0,3] , where 0 = no change, 1 = positive definite change, 2 = negative definite change, 3 = indefinite change.
 
-<div align='center'><img width='600' src="./asset/slc-sar-det-19-20.png"></div>
+<div align='center'><img width='600' src="./asset/sar-detect.png"></div>
 
-*Proportion of changed pixels in a small region in Salty Lake City for a 49-image time sequence. There were about 360000 pixels in the aoi. Note the (approximate) alternation of arrivals (positive definite changes) and departures (negative definite changes).*
+*Proportion of changed pixels in a small region in Salty Lake City for a 49-image time sequence. There were about 360000 pixels in the aoi. Note the (approximate) alternation of presence (positive definite changes) and departures (negative definite changes).*
 
-😣Analyze later....
+The results of the production activity monitoring are shown in Figure 16, with a value range of ∈[0, k-1], where k represents the number of images. In this example, k=49. The smaller the value, the closer the change is to the starting point of the timeline, and vice versa. The results indicate that the main mining area maintained a high-density production activity throughout the study period, especially at the end of 2020, with activities being particularly concentrated in the central, northern, and eastern edge areas. The development frequency is highest at the junction with Mining Area No. 1 in the southwest direction. In April 2019, a significant increase in the proportion of positive definite changes indicated the conduct of large-scale production activities; by the end of 2019, the rise in the proportion of negative definite changes reflected a decrease in the intensity of production activities.
 
 ---
 
@@ -607,14 +600,20 @@ For a time series of  k  images, the exported change map consists of  k+2  bands
 
 <div align='center'><img src="./asset/fmap.png"></div>
 
+<div align='center'><img src="./asset/slc-sar-det-19-20.png"></div>
+
 ## TO DO
 - [x] classification result accuracy evaluation
 - [x] add more reliable class to classify dataset
 - [x] remote sensing mapping
 - [x] sar change detection
-- [ ] D-InSAR detect surface deformation
+- [ ] D-InSAR detect surface displacement(refer to [this](https://github.com/AlexeyPechnikov/pygmtsar))
+
+## End
+
+In this Repo, what I aim to do is to build upon the achievements of previous scholars and further utilize long-time series remote sensing imagery for ecological monitoring. LandTrend can monitor the disturbance conditions in the study area over the years. To make full use of the time series data, the remote sensing time series imagery is transformed into a collection of pixel time series data, and clustering and classification work is conducted based on pixels. The ideal situation for this repository should be that users input the study area of interest, set a series of thresholds (which can also be default), and the program then outputs the detected disturbance conditions, pixel trajectory types, etc., and analyzes them in such a workflow to simplify the user's workload. This project still needs further organization and improvement, and what I have done is just a small part of the work. Many thanks to other opensource workers and repos.
 
 
-[^1]:Kennedy, Robert E., Yang, Zhiqiang, & Cohen, Warren B. (2010). Detecting trends in forest disturbance and recovery using yearly Landsat time series: 1. LandTrendr - Temporal segmentation algorithms. Remote Sensing of Environment, 114, 2897-2910
+[^1]:Kennedy, Robert E, Yang, Zhiqiang, & Cohen, Warren B. (2010). Detecting trends in forest disturbance and recovery using yearly Landsat time series: 1. LandTrendr - Temporal segmentation algorithms. Remote Sensing of Environment, 114, 2897-2910
 [^2]:Zhen Yang, Jing Li, Carl E. Zipper, Yingying Shen, Hui Miao, Patricia F. Donovan, Identification of the disturbance and trajectory types in mining areas using multitemporal remote sensing images,Science of The Total Environment,Volume 644,2018,Pages 916-927,ISSN 0048-9697,https://doi.org/10.1016/j.scitotenv.2018.06.341.
 [^3]:John Paparrizos Columbia University jopa@cs.columbia.edu Luis Gravano Columbia University gravano@cs.columbia.edu k-Shape: Efficient and Accurate Clustering of Time Series. 
